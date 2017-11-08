@@ -28,6 +28,8 @@ main = do
       startMaster backend $ \workers -> do
         result <- manager files workers
         liftIO $ putStrLn result
+        liftIO $ putStrLn "Terminating slaves..."
+        terminateAllSlaves backend
     ["worker", host, port] -> do
       log "Starting worker node..."
       backend <- initializeBackend host port rtable

@@ -9,30 +9,22 @@ import Control.Distributed.Process.Closure
 import Control.Distributed.Process.Node                     (initRemoteTable)
 import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
-import Prelude hiding (log)
+import Prelude hiding (plog)
 
 import Control.Monad.State
 
-import System.FilePath
-
-
-type File = String
-type Files = [File]
-
+import Utils
 
 type WorkQueue = ProcessId
 type Master = ProcessId
 
-log :: String -> Process ()
-log msg = liftIO $ putStrLn msg 
-
-doWork :: String -> String
-doWork s = s ++ ": COMPLETE \n"
+doWork :: String -> String -> String
+doWork s id = "\n   COMPLETED by["++ id  ++ "] " ++ s
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
   me <- getSelfPid
-  log $ "Worker started: " ++ show me
+  plog " Ready to work! " 
   run me
   where
     run :: ProcessId -> Process ()
@@ -41,12 +33,12 @@ worker (manager, workQueue) = do
       receiveWait[match work, match end]
       where
         work n = do
-          log $ "[Worker " ++ show me ++ "] given work: " ++ show n
-          send manager $ doWork n
-          log $ "[Worker " ++ show me ++ "] finished work."
+          plog $ " Working on: " ++ show n
+          send manager $ doWork n $ show me
+          plog " Finished work. :) "
           run me 
         end () = do
-          log $ "Terminating worker: " ++ show me
+          plog " Terminating worker "
           return ()
 
 remotable['worker] 
@@ -61,14 +53,10 @@ manager files workers = do
     forM_ files $ \f -> do
       id <- expect
       send id f
-
     forever $ do
       id <- expect
       send id ()
-    
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  log "Started workers"
- 
   getResults $ length files
 
 getResults :: Int -> Process File
@@ -78,6 +66,6 @@ getResults = run ""
     run r 0 = return r
     run r n = do
       s <- expect
-      run (r ++ s ++ "\n") (n - 1)
+      run (r ++ s) (n - 1)
       
 

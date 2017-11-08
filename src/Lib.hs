@@ -63,7 +63,6 @@ manager files workers = do
       send id f
 
     forever $ do
-      log "Shutting down workers.."
       id <- expect
       send id ()
     

@@ -27,7 +27,7 @@ log :: String -> Process ()
 log msg = liftIO $ putStrLn msg 
 
 doWork :: String -> String
-doWork s = s ++ ": COMPLETE"
+doWork s = s ++ ": COMPLETE \n"
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -44,7 +44,7 @@ worker (manager, workQueue) = do
             send manager $ doWork n
             log $ "[Worker " ++ show me ++ "] finished work."
             run me 
-        , match $ \ () -> do
+        , match $ \() -> do
             log $ "Terminating worker: " ++ show me
             return ()
         ]
@@ -61,7 +61,11 @@ manager files workers = do
     forM_ files $ \f -> do
       id <- expect
       send id f
-    log "add to queue"
+
+    forever $ do
+      log "Shutting down workers.."
+      id <- expect
+      send id ()
     
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
   log "Started workers"

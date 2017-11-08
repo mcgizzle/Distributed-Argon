@@ -29,7 +29,7 @@ log msg = liftIO $ putStrLn msg
 doWork :: String -> String
 doWork s = s ++ ": COMPLETE"
 
-worker :: (Master, WorkQueue) -> Process String
+worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
   me <- getSelfPid
   log $ "Worker started: " ++ show me
@@ -54,7 +54,7 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: Files -> [NodeId] -> Process ()
+manager :: Files -> [NodeId] -> Process String
 manager files workers = do
   me <- getSelfPid
   workQueue <- spawnLocal $ do 
@@ -65,7 +65,7 @@ manager files workers = do
     
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
   log "Started workers"
-
+ 
   getResults $ length files
 
 getResults :: Int -> Process File
@@ -75,6 +75,6 @@ getResults = run ""
     run r 0 = return r
     run r n = do
       s <- expect
-      run (n -1) (r ++ s)
+      run (r ++ s ++ "\n") (n - 1)
       
 

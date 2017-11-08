@@ -6,4 +6,4 @@ import System.FilePath
 --newtype Files = State [FilePath]
 
 getFiles :: [String]
-getFiles = ["ME FILE", "HEY", "Print Me!"]
+getFiles = ["WORK 1", "WORK 2", "WORK 3"]

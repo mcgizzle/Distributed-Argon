@@ -25,8 +25,10 @@ main = do
     ["manager", host, port] -> do
       log "Starting manager node..."
       backend <- initializeBackend host port rtable
-      startMaster backend $ \workers -> manager files workers
-    ["slave", host, port] -> do
+      startMaster backend $ \workers -> do
+        result <- manager files workers
+        liftIO $ putStrLn result
+    ["worker", host, port] -> do
       log "Starting worker node..."
       backend <- initializeBackend host port rtable
       startSlave backend

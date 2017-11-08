@@ -1,0 +1,18 @@
+worker-1:
+  image: restful-argon
+  command: /usr/local/bin/restful-argon worker localhost 8080
+  ports:
+    - "8080:8080"
+  net: "host"
+worker-2:
+  image: restful-Argon
+  command: /usr/local/bin/restful-argon lworker localhost 8081
+  ports:
+    - "8081:8081"
+  net: "host"
+worker-3:
+  image: restful-Argon
+  command: /usr/local/bin/restful-argon worker localhost 8082
+  ports:
+    - "8082:8082"
+  net: "host"

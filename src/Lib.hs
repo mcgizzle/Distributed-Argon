@@ -38,16 +38,16 @@ worker (manager, workQueue) = do
     run :: ProcessId -> Process ()
     run me = do
       send workQueue me
-      receiveWait
-        [ match $ \n  -> do
-            log $ "[Worker " ++ show me ++ "] given work: " ++ show n
-            send manager $ doWork n
-            log $ "[Worker " ++ show me ++ "] finished work."
-            run me 
-        , match $ \() -> do
-            log $ "Terminating worker: " ++ show me
-            return ()
-        ]
+      receiveWait[match work, match end]
+      where
+        work n = do
+          log $ "[Worker " ++ show me ++ "] given work: " ++ show n
+          send manager $ doWork n
+          log $ "[Worker " ++ show me ++ "] finished work."
+          run me 
+        end () = do
+          log $ "Terminating worker: " ++ show me
+          return ()
 
 remotable['worker] 
 

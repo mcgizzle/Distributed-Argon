@@ -1,0 +1,19 @@
+Configuring network-transport-0.5.1...
+Building network-transport-0.5.1...
+Preprocessing library network-transport-0.5.1...
+[1 of 3] Compiling Network.Transport.Internal ( src/Network/Transport/Internal.hs, .stack-work/dist/x86_64-osx/Cabal-1.24.2.0/build/Network/Transport/Internal.o )
+
+src/Network/Transport/Internal.hs:86:25: warning: [-Wdeprecations]
+    In the use of ‘inlinePerformIO’
+    (imported from Data.ByteString.Internal):
+    Deprecated: "If you think you know what you are doing, use 'unsafePerformIO'. If you are sure you know what you are doing, use 'unsafeDupablePerformIO'. If you enjoy sharing an address space with a malevolent agent of chaos, try 'accursedUnutterablePerformIO'."
+
+src/Network/Transport/Internal.hs:101:25: warning: [-Wdeprecations]
+    In the use of ‘inlinePerformIO’
+    (imported from Data.ByteString.Internal):
+    Deprecated: "If you think you know what you are doing, use 'unsafePerformIO'. If you are sure you know what you are doing, use 'unsafeDupablePerformIO'. If you enjoy sharing an address space with a malevolent agent of chaos, try 'accursedUnutterablePerformIO'."
+[2 of 3] Compiling Network.Transport ( src/Network/Transport.hs, .stack-work/dist/x86_64-osx/Cabal-1.24.2.0/build/Network/Transport.o )
+[3 of 3] Compiling Network.Transport.Util ( src/Network/Transport/Util.hs, .stack-work/dist/x86_64-osx/Cabal-1.24.2.0/build/Network/Transport/Util.o )
+Installing library in
+/Users/McGroarty/Documents/College/Internet-Applications/RESTful-Cloud-API/.stack-work/install/x86_64-osx/lts-9.12/8.0.2/lib/x86_64-osx-ghc-8.0.2/network-transport-0.5.1-6wYUwkRX44h5BVB4clG7qB
+Registering network-transport-0.5.1...

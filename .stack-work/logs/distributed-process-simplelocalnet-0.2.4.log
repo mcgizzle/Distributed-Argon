@@ -1,0 +1,44 @@
+Configuring distributed-process-simplelocalnet-0.2.4...
+Building distributed-process-simplelocalnet-0.2.4...
+Preprocessing library distributed-process-simplelocalnet-0.2.4...
+[1 of 2] Compiling Control.Distributed.Process.Backend.SimpleLocalnet.Internal.Multicast ( src/Control/Distributed/Process/Backend/SimpleLocalnet/Internal/Multicast.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Control/Distributed/Process/Backend/SimpleLocalnet/Internal/Multicast.o )
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet/Internal/Multicast.hs:21:1: Warning:
+    The import of ‘Control.Applicative’ is redundant
+      except perhaps to import instances from ‘Control.Applicative’
+    To import instances alone, use: import Control.Applicative()
+[2 of 2] Compiling Control.Distributed.Process.Backend.SimpleLocalnet ( src/Control/Distributed/Process/Backend/SimpleLocalnet.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Control/Distributed/Process/Backend/SimpleLocalnet.o )
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:105:1: Warning:
+    The import of ‘Control.Applicative’ is redundant
+      except perhaps to import instances from ‘Control.Applicative’
+    To import instances alone, use: import Control.Applicative()
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:260:3: Warning:
+    In the use of ‘bracket’
+    (imported from Control.Distributed.Process, but defined in Control.Distributed.Process.Internal.Primitives):
+    Deprecated: "Use Control.Monad.Catch.bracket instead"
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:330:16: Warning:
+    In the use of ‘try’
+    (imported from Control.Distributed.Process, but defined in Control.Distributed.Process.Internal.Primitives):
+    Deprecated: "Use Control.Monad.Catch.try instead"
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:334:26: Warning:
+    In the use of ‘try’
+    (imported from Control.Distributed.Process, but defined in Control.Distributed.Process.Internal.Primitives):
+    Deprecated: "Use Control.Monad.Catch.try instead"
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:352:3: Warning:
+    In the use of ‘bracket’
+    (imported from Control.Distributed.Process, but defined in Control.Distributed.Process.Internal.Primitives):
+    Deprecated: "Use Control.Monad.Catch.bracket instead"
+
+src/Control/Distributed/Process/Backend/SimpleLocalnet.hs:399:37: Warning:
+    In the use of ‘finally’
+    (imported from Control.Distributed.Process, but defined in Control.Distributed.Process.Internal.Primitives):
+    Deprecated: "Use Control.Monad.Catch.finally instead"
+In-place registering distributed-process-simplelocalnet-0.2.4...
+Installing library in
+/Users/McGroarty/Documents/College/Internet-Applications/RESTful-Cloud-API/.stack-work/install/x86_64-osx/ghc-7.10.2/7.10.2/lib/x86_64-osx-ghc-7.10.2/distributed-process-simplelocalnet-0.2.4-6EzhsDdu3cf8NzjMKdUxxA
+Registering distributed-process-simplelocalnet-0.2.4...

@@ -1,0 +1,16 @@
+Configuring network-transport-tcp-0.5.1...
+Building network-transport-tcp-0.5.1...
+Preprocessing library network-transport-tcp-0.5.1...
+[1 of 2] Compiling Network.Transport.TCP.Internal ( src/Network/Transport/TCP/Internal.hs, .stack-work/dist/x86_64-osx/Cabal-1.24.2.0/build/Network/Transport/TCP/Internal.o )
+
+src/Network/Transport/TCP/Internal.hs:91:7: warning: [-Wdeprecations]
+    In the use of ‘bindSocket’ (imported from Network.Socket):
+    Deprecated: "use 'bind'"
+
+src/Network/Transport/TCP/Internal.hs:121:3: warning: [-Wdeprecations]
+    In the use of ‘sClose’ (imported from Network.Socket):
+    Deprecated: "use 'close'"
+[2 of 2] Compiling Network.Transport.TCP ( src/Network/Transport/TCP.hs, .stack-work/dist/x86_64-osx/Cabal-1.24.2.0/build/Network/Transport/TCP.o )
+Installing library in
+/Users/McGroarty/.stack/snapshots/x86_64-osx/lts-8.2/8.0.2/lib/x86_64-osx-ghc-8.0.2/network-transport-tcp-0.5.1-BVqLzFLKrPVH4g2b2XTysf
+Registering network-transport-tcp-0.5.1...

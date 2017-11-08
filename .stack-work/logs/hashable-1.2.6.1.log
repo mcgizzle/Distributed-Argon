@@ -1,0 +1,16 @@
+Configuring hashable-1.2.6.1...
+Building hashable-1.2.6.1...
+Preprocessing library hashable-1.2.6.1...
+[1 of 4] Compiling Data.Hashable.Class ( Data/Hashable/Class.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Data/Hashable/Class.o )
+[2 of 4] Compiling Data.Hashable.Generic ( Data/Hashable/Generic.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Data/Hashable/Generic.o )
+
+Data/Hashable/Generic.hs:21:1: Warning:
+    The import of ‘Data.Bits’ is redundant
+      except perhaps to import instances from ‘Data.Bits’
+    To import instances alone, use: import Data.Bits()
+[3 of 4] Compiling Data.Hashable.Lifted ( Data/Hashable/Lifted.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Data/Hashable/Lifted.o )
+[4 of 4] Compiling Data.Hashable    ( Data/Hashable.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Data/Hashable.o )
+In-place registering hashable-1.2.6.1...
+Installing library in
+/Users/McGroarty/Documents/College/Internet-Applications/RESTful-Cloud-API/.stack-work/install/x86_64-osx/ghc-7.10.2/7.10.2/lib/x86_64-osx-ghc-7.10.2/hashable-1.2.6.1-99mSuhyE2gWDYmQAXK2Yju
+Registering hashable-1.2.6.1...

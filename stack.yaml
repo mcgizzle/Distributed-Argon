@@ -1,0 +1,35 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- .
+extra-deps:
+- data-accessor-0.2.2.7
+- distributed-process-0.7.3
+- distributed-process-simplelocalnet-0.2.4
+- distributed-static-0.3.8
+- exceptions-0.8.3
+- hashable-1.2.6.1
+- mtl-2.2.1
+- network-2.6.3.2
+- network-multicast-0.2.0
+- network-transport-0.5.2
+- network-transport-tcp-0.6.0
+- random-1.1
+- rank1dynamic-0.4.0
+- stm-2.4.4.1
+- syb-0.7
+- text-1.2.2.2
+- transformers-0.5.5.0
+- transformers-compat-0.5.1.4
+- aeson-1.2.3.0
+- ansi-terminal-0.7.1.1
+- docopt-0.7.0.5
+- ghc-paths-0.1.0.9
+- ghc-syb-utils-0.2.3.3
+- lens-simple-0.1.0.9
+- pipes-4.3.6
+- pipes-bytestring-2.1.6
+- pipes-files-0.1.2
+- pipes-group-1.0.8
+- pipes-safe-2.2.5
+resolver: ghc-7.10.2

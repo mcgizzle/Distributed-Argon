@@ -1,0 +1,68 @@
+
+==================== FINAL INTERFACE ====================
+2017-11-08 12:14:35.369323 UTC
+
+interface RESTf_CEeMEH0yo3tGYfzjQEgYvg:Utils 7102
+  interface hash: e8ead7aabf6b7ae675f00ea2f4830a06
+  ABI hash: 6f782ae1f630a89490f4caded2f0bfa1
+  export-list hash: af084a0382418473c39245f1846a3169
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 56b9a755d22be00f2eba50f3628a69c7
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Utils.getFiles
+module dependencies:
+package dependencies: base-4.8.1.0*
+                      filepath-1.4.0.0@filep_KsGE6pHE5eZHSN90ZVax6A ghc-prim-0.4.0.0
+                      integer-gmp-1.0.0.0 mtl-2.2.1@mtl_1H6yejpIR9II7DBtJdIIyQ
+                      transformers-0.5.5.0@trans_DmkP9m9w0G11FeqXg5CBH8
+orphans: base-4.8.1.0:GHC.Base base-4.8.1.0:GHC.Float
+         transformers-0.5.5.0@trans_DmkP9m9w0G11FeqXg5CBH8:Control.Monad.Trans.Error
+family instance modules: base-4.8.1.0:Control.Applicative
+                         base-4.8.1.0:Data.Either base-4.8.1.0:Data.Functor.Identity
+                         base-4.8.1.0:Data.Monoid base-4.8.1.0:Data.Type.Equality
+                         base-4.8.1.0:GHC.Generics
+import  -/  base-4.8.1.0:GHC.Base 1db77db5dae73d8c424c85b09fbadb89
+import  -/  base-4.8.1.0:Prelude 518f762991bc287d78f21a73c974da1f
+import  -/  filepath-1.4.0.0@filep_KsGE6pHE5eZHSN90ZVax6A:System.FilePath f4cffd7704c4bbe79880b28e84a9b24d
+import  -/  mtl-2.2.1@mtl_1H6yejpIR9II7DBtJdIIyQ:Control.Monad.State 2777607008153f11e4b77c178dc1b4cb
+911b3824d50372a9efd61f5c08c0c1d5
+  getFiles :: [GHC.Base.String]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ GHC.Base.String
+                   Utils.getFiles5
+                   Utils.getFiles1) -}
+9b9a2e56d68b5ede0ba060e73d5c9d72
+  getFiles1 :: [GHC.Base.String]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ GHC.Base.String
+                   Utils.getFiles4
+                   Utils.getFiles2) -}
+6d5e0a87e5c577b50b39323ea12a970f
+  getFiles2 :: [GHC.Base.String]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ GHC.Base.String
+                   Utils.getFiles3
+                   (GHC.Types.[] @ GHC.Base.String)) -}
+ccaf96d231a8a5f09f23b00ad8bdc3cf
+  getFiles3 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "Print Me!"#) -}
+5a55d87e43ac0dc52a400d8e79c4d870
+  getFiles4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "HEY"#) -}
+89212e4a8886fa03a730a265411fb62c
+  getFiles5 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "ME FILE"#) -}
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+

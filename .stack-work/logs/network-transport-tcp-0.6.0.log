@@ -1,0 +1,109 @@
+Configuring network-transport-tcp-0.6.0...
+Building network-transport-tcp-0.6.0...
+Preprocessing library network-transport-tcp-0.6.0...
+[1 of 2] Compiling Network.Transport.TCP.Internal ( src/Network/Transport/TCP/Internal.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Network/Transport/TCP/Internal.o )
+
+src/Network/Transport/TCP/Internal.hs:83:1: Warning:
+    The import of ‘Control.Monad’ is redundant
+      except perhaps to import instances from ‘Control.Monad’
+    To import instances alone, use: import Control.Monad()
+
+src/Network/Transport/TCP/Internal.hs:84:1: Warning:
+    The import of ‘SomeException, throwIO, mask_, onException, catch,
+                   bracketOnError’
+    from module ‘Control.Exception’ is redundant
+
+src/Network/Transport/TCP/Internal.hs:95:1: Warning:
+    The import of ‘Control.Applicative’ is redundant
+      except perhaps to import instances from ‘Control.Applicative’
+    To import instances alone, use: import Control.Applicative()
+
+src/Network/Transport/TCP/Internal.hs:96:1: Warning:
+    The import of ‘Data.Word’ is redundant
+      except perhaps to import instances from ‘Data.Word’
+    To import instances alone, use: import Data.Word()
+
+src/Network/Transport/TCP/Internal.hs:223:7: Warning:
+    In the use of ‘N.bindSocket’ (imported from Network.Socket):
+    Deprecated: "use 'bind'"
+
+src/Network/Transport/TCP/Internal.hs:228:21: Warning:
+    This binding for ‘sock’ shadows the existing binding
+      bound at src/Network/Transport/TCP/Internal.hs:221:38
+
+src/Network/Transport/TCP/Internal.hs:229:13: Warning:
+    In the use of ‘N.sClose’ (imported from Network.Socket):
+    Deprecated: "use 'close'"
+
+src/Network/Transport/TCP/Internal.hs:232:24: Warning:
+    This binding for ‘sock’ shadows the existing binding
+      bound at src/Network/Transport/TCP/Internal.hs:221:38
+
+src/Network/Transport/TCP/Internal.hs:247:14: Warning:
+    This binding for ‘sock’ shadows the existing binding
+      bound at src/Network/Transport/TCP/Internal.hs:221:38
+
+src/Network/Transport/TCP/Internal.hs:251:29: Warning:
+    In the use of ‘N.sClose’ (imported from Network.Socket):
+    Deprecated: "use 'close'"
+
+src/Network/Transport/TCP/Internal.hs:284:3: Warning:
+    In the use of ‘N.sClose’ (imported from Network.Socket):
+    Deprecated: "use 'close'"
+[2 of 2] Compiling Network.Transport.TCP ( src/Network/Transport/TCP.hs, .stack-work/dist/x86_64-osx/Cabal-1.22.4.0/build/Network/Transport/TCP.o )
+
+src/Network/Transport/TCP.hs:68:1: Warning:
+    The import of ‘tryToEnum’
+    from module ‘Network.Transport.Internal’ is redundant
+
+src/Network/Transport/TCP.hs:128:1: Warning:
+    The import of ‘Control.Applicative’ is redundant
+      except perhaps to import instances from ‘Control.Applicative’
+    To import instances alone, use: import Control.Applicative()
+
+src/Network/Transport/TCP.hs:165:1: Warning:
+    The import of ‘Data.Traversable’ is redundant
+      except perhaps to import instances from ‘Data.Traversable’
+    To import instances alone, use: import Data.Traversable()
+
+src/Network/Transport/TCP.hs:170:1: Warning:
+    The qualified import of ‘Data.ByteString’ is redundant
+      except perhaps to import instances from ‘Data.ByteString’
+    To import instances alone, use: import Data.ByteString()
+
+src/Network/Transport/TCP.hs:960:32: Warning:
+    This binding for ‘sock’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:916:49
+
+src/Network/Transport/TCP.hs:960:38: Warning:
+    This binding for ‘sockAddr’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:916:55
+
+src/Network/Transport/TCP.hs:962:20: Warning:
+    Defined but not used: ‘actualPort’
+
+src/Network/Transport/TCP.hs:1229:17: Warning:
+    Defined but not used: ‘sock’
+
+src/Network/Transport/TCP.hs:1272:17: Warning:
+    This binding for ‘act’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:1103:5
+
+src/Network/Transport/TCP.hs:1303:17: Warning:
+    This binding for ‘act’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:1103:5
+
+src/Network/Transport/TCP.hs:1313:14: Warning:
+    This binding for ‘act’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:1103:5
+
+src/Network/Transport/TCP.hs:1376:21: Warning:
+    This binding for ‘err’ shadows the existing binding
+      bound at src/Network/Transport/TCP.hs:1343:19
+
+src/Network/Transport/TCP.hs:1887:21: Warning:
+    Defined but not used: ‘ourEndPoint’
+In-place registering network-transport-tcp-0.6.0...
+Installing library in
+/Users/McGroarty/Documents/College/Internet-Applications/RESTful-Cloud-API/.stack-work/install/x86_64-osx/ghc-7.10.2/7.10.2/lib/x86_64-osx-ghc-7.10.2/network-transport-tcp-0.6.0-0Yv04F48xCg5HVcagA6b6S
+Registering network-transport-tcp-0.6.0...

@@ -15,11 +15,13 @@ import Control.Monad.State
 
 import Utils
 
+import System.IO.Unsafe
+
 type WorkQueue = ProcessId
 type Master = ProcessId
 
-doWork :: String -> String -> String
-doWork s id = "\n   COMPLETED by["++ id  ++ "] " ++ s
+doWork :: String -> IO String
+doWork = runArgon
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -32,10 +34,11 @@ worker (manager, workQueue) = do
       send workQueue me
       receiveWait[match work, match end]
       where
-        work n = do
-          plog $ " Working on: " ++ show n
-          send manager $ doWork n $ show me
-          plog " Finished work. :) "
+        work f = do
+          plog $ " Working on: " ++ show f
+          work <- liftIO $ doWork f
+          send manager work
+          plog " Finished work :) "
           run me 
         end () = do
           plog " Terminating worker "
@@ -59,7 +62,7 @@ manager files workers = do
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
   getResults $ length files
 
-getResults :: Int -> Process File
+getResults :: Int -> Process String
 getResults = run ""
   where
     run :: String -> Int -> Process String

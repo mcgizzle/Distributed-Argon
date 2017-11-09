@@ -1,7 +1,16 @@
-resolver: nightly-2016-12-10
 flags: {}
 extra-package-dbs: []
 packages:
 - .
 extra-deps:
+- distributed-process-0.6.6
+- distributed-process-simplelocalnet-0.2.3.2
+- distributed-static-0.3.8
+- network-transport-tcp-0.5.1
+- rank1dynamic-0.3.3.0
+- docopt-0.7.0.5
+- pipes-files-0.1.2
+- hierarchy-0.3.1.2
+- posix-paths-0.2.1.1
+resolver: lts-3.22
 

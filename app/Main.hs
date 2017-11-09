@@ -29,6 +29,7 @@ startWorkers n host = do
 startManager :: Files -> String -> IO ()
 startManager files host = do
   backend <- initializeBackend host "5000" rtable
+  putStrLn "Backend intitialised"
   startMaster backend $ \workers -> do
     result <- manager files workers
     plog result
@@ -45,6 +46,7 @@ main = do
       backend <- initializeBackend host port rtable
       startSlave backend    
     ["argon", path, host, n] -> do 
+      putStrLn "Satrting Manager Node"
       files <- splitFiles path
       --startWorkers (read n :: Int) host
       startManager files host

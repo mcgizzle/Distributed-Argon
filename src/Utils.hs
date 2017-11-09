@@ -20,6 +20,12 @@ type Files = [File]
 getFiles :: [String]
 getFiles = ["WORK 1", "WORK 2", "WORK 3"]
 
+listDirectory :: FilePath -> IO [FilePath]
+listDirectory path =
+  (filter f) <$> (getDirectoryContents path)
+    where f filename = filename /= "." && filename /= ".."
+
+
 -- LOG
 log :: String -> IO ()
 log = liftIO . putStrLn 
@@ -35,11 +41,11 @@ splitFiles :: FilePath -> IO [FilePath]
 splitFiles = listDirectory
 
 runArgon :: String -> IO String
-runArgon file = sendCommand ("cat", takeFileName file)
+runArgon file = sendCommand ("stack","exec argon src/"++file)
 
 sendCommand :: Command -> IO String
 sendCommand (cmd,arg) = do
-  putStrLn "running cmd"
-  (_,Just hout,_,_)  <- createProcess (proc cmd [arg]){ std_out = CreatePipe }
+  putStrLn $ "running cmd: " ++ cmd ++ " " ++ arg
+  (_,Just hout,_,_)  <- createProcess (proc cmd $ words arg){ std_out = CreatePipe }
   hGetContents hout
 

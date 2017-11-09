@@ -21,6 +21,8 @@ library
                      , distributed-process-simplelocalnet 
                      , network-transport-tcp
                      , filepath, mtl
+                     , process
+                     , directory
   default-language:    Haskell2010
 
 executable RESTful-Argon
@@ -33,6 +35,8 @@ executable RESTful-Argon
                      , distributed-process-simplelocalnet 
                      , network-transport-tcp
                      , filepath, mtl
+                     , process
+                     , directory
 
   default-language:    Haskell2010
 

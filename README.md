@@ -1,4 +1,4 @@
-# Distributed Argon
+# RESTful-Argon
 
 A distributed implementation of 'argon' built using Cloud Haskell.
 

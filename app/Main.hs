@@ -15,39 +15,25 @@ import Prelude hiding (log)
 import Lib 
 import Utils
 
-port :: String
-port = "600"
-
-startWorkers :: Int -> String -> IO ()
-startWorkers 0 _ = return ()
-startWorkers n host = do
-  putStrLn $ port ++ show n
-  backend <- initializeBackend host (port ++ show n) rtable
-  startSlave backend
-  startWorkers (n -1) host
-    
 startManager :: Files -> String -> IO ()
 startManager files host = do
   backend <- initializeBackend host "5000" rtable
-  putStrLn "Backend intitialised"
   startMaster backend $ \workers -> do
     result <- manager files workers
-    plog result
-    plog " Terminating slaves..."
     terminateAllSlaves backend
+    liftIO $ putStrLn $ "RESULT:\n" ++ result
+  return ()
 
 main :: IO ()
 main = do
   args <- getArgs
-  let files = getFiles
   case args of
     ["worker", host, port] -> do
       putStrLn "Starting Node as Worker"
       backend <- initializeBackend host port rtable
       startSlave backend    
-    ["argon", path, host, n] -> do 
+    ["argon", path, host]  -> do 
       putStrLn "Satrting Manager Node"
-      files <- splitFiles path
-      --startWorkers (read n :: Int) host
+      files <- getFilePaths path
       startManager files host
     _ -> putStrLn "Bad parameters"

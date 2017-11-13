@@ -1,6 +1,12 @@
 # Distributed Argon
 
-A distributed implementation of 'argon' built using Cloud Haskell.
+A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell.
 
+## About
+Distributed-Argon uses a RESTful API implementing the 'master/slave' algorithm for distributing the workload of Argon, a library which measures code complexity. Each file which needs to be calculated is added to a queue by the master node. Worker nodes take work from this queue and send the result to the manager when complete.
 
-RESTful-Argon uses the 'master/slave' algorithm for distributing the workload of Argon, a library which measures code complexity.
+## To compile with stack
+``` stack build ```
+
+## To run
+``` bash run.sh ```

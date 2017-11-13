@@ -34,6 +34,6 @@ main = do
       startSlave backend    
     ["argon", path, host]  -> do 
       putStrLn "Satrting Manager Node"
-      files <- getFilePaths path
+      files <- getFiles path
       startManager files host
     _ -> putStrLn "Bad parameters"

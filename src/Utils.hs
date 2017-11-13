@@ -1,5 +1,5 @@
 module Utils(
-Files,getFilePaths,
+Files,getFiles,
 plog,log,
 Command,
 runArgon
@@ -16,8 +16,8 @@ import System.Directory
 -- FILES
 type Files = [FilePath]
 
-getFilePaths :: FilePath -> IO Files
-getFilePaths path = fmap (\ f -> path ++ "/" ++ f) . filter (\ f -> head f /= '.') <$> getDirectoryContents path
+getFiles :: FilePath -> IO Files
+getFiles path = fmap (\ f -> path ++ "/" ++ f) . filter (\ f -> head f /= '.') <$> getDirectoryContents path
 
 -- LOG
 log :: String -> IO ()

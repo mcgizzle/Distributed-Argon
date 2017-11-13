@@ -1,13 +1,13 @@
-name:                RESTful-Argon
+name:                Distributed-Argon
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/RESTful-Argon#readme
+homepage:            https://github.com/McGizzle/Distributed-Argon#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
+author:              Author Sean McGroarty
+maintainer:          mcgroas@tcd.ie
+copyright:           2017 Author Sean McGroarty
 category:            Web
 build-type:          Simple
 extra-source-files:  README.md
@@ -25,12 +25,12 @@ library
                      , directory
   default-language:    Haskell2010
 
-executable RESTful-Argon
+executable Distributed-Argon
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
-                     , RESTful-Argon
+                     , Distributed-Argon
                      , distributed-process 
                      , distributed-process-simplelocalnet 
                      , network-transport-tcp

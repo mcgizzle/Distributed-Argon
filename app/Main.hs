@@ -15,9 +15,9 @@ import Prelude hiding (log)
 import Lib 
 import Utils
 
-startManager :: Files -> String -> IO ()
-startManager files host = do
-  backend <- initializeBackend host "5000" rtable
+startManager :: Files -> String -> String -> IO ()
+startManager files host port = do
+  backend <- initializeBackend host port rtable
   startMaster backend $ \workers -> do
     result <- manager files workers
     terminateAllSlaves backend
@@ -32,8 +32,8 @@ main = do
       putStrLn "Starting Node as Worker"
       backend <- initializeBackend host port rtable
       startSlave backend    
-    ["argon", path, host]  -> do 
+    ["manager", path, host, port]  -> do 
       putStrLn "Satrting Manager Node"
       files <- getFiles path
-      startManager files host
+      startManager files host port
     _ -> putStrLn "Bad parameters"

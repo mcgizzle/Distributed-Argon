@@ -34,7 +34,6 @@ runArgon file = sendCommand ("stack","exec argon "++file)
 
 sendCommand :: Command -> IO String
 sendCommand (cmd,arg) = do
-  putStrLn $ "running cmd: " ++ cmd ++ " " ++ arg
   (_,Just hout,_,_)  <- createProcess (proc cmd $ words arg){ std_out = CreatePipe }
   hGetContents hout
 

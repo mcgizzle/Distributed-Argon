@@ -1,5 +1,5 @@
 #!/bin/bash
-stack exec RESTful-Argon worker localhost 7000 &
-stack exec RESTful-Argon worker localhost 7001 &
-stack exec RESTful-Argon worker localhost 7002 &
-stack exec RESTful-Argon manager localhost $1 
+stack exec Distributed-Argon worker localhost 7000 &
+stack exec distributed-Argon worker localhost 7001 &
+stack exec Distributed-Argon worker localhost 7002 &
+stack exec Distributed-Argon argon ../../FYP/Stack/src/Stack localhost $1 

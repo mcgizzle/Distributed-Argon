@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Lib where
 
-
+-- Cloud Haskell
 import Control.Distributed.Process
 import Control.Distributed.Process.Backend.SimpleLocalnet
 import Control.Distributed.Process.Closure
@@ -11,19 +11,33 @@ import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
 import Prelude hiding (log)
 
-import Control.Monad.State
+-- Data
+import Data.Binary
+import Data.Either
 
+-- Library
 import Utils
 
+-- Pipes
 import Pipes
 import Pipes.Safe (runSafeT)
 import Pipes.Prelude as P hiding (show,length)
+import GHC.Generics (Generic)
+
+import Argon hiding (defaultConfig)
 
 type WorkQueue = ProcessId
 type Master = ProcessId
 
-doWork :: String -> IO String
-doWork = runArgon
+defaultConfig = Config { minCC       = 1
+                       , exts        = []
+                       , headers     = []
+                       , includeDirs = []
+                       , outputMode  = Colored
+                       }
+
+doWork :: String -> IO AnalysisResult
+doWork f = do (_, r) <- analyze defaultConfig f; return r
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -39,7 +53,9 @@ worker (manager, workQueue) = do
         work f = do
           plog $ " Working on: " ++ show f
           work <- liftIO $ doWork f
-          send manager work
+          case work of
+           Left error  -> plog $ " There was an error computing `" ++ f ++ "` :" ++ error
+           Right work' -> send manager (f ++ " : " ++ format $ show $ work')
           plog " Finished work :) "
           run me 
         end () = do
@@ -56,7 +72,7 @@ manager :: FilePath -> [NodeId] -> Process String
 manager path workers = do
   me <- getSelfPid
  
-  let source = getFiles path
+  let source = allFiles path
   let dispatch f = do id <- expect; send id f
   workQueue <- spawnLocal $ do 
     runSafeT $ runEffect $ for source $ lift . lift . dispatch
@@ -71,7 +87,7 @@ getResult :: String -> Int -> Process String
 getResult s count = 
   receiveWait[match result, match done]
   where
-    result r = getResult (s ++ r) count
+    result r = getResult (s ++ r ++ "\n") count
     done False 
           | count == 1 = return s
           | otherwise = getResult s (count - 1)

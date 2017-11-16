@@ -1,2 +1,2 @@
 #!/bin/bash
-stack exec Distributed-Argon manager $1 localhost 8006 
+stack exec Distributed-Argon manager $1 localhost 9000 

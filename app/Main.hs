@@ -15,11 +15,11 @@ import Prelude hiding (log)
 import Lib 
 import Utils
 
-startManager :: Files -> String -> String -> IO ()
-startManager files host port = do
+startManager :: FilePath -> String -> String -> IO ()
+startManager path host port = do
   backend <- initializeBackend host port rtable
   startMaster backend $ \workers -> do
-    result <- manager files workers
+    result <- manager path workers
     terminateAllSlaves backend
     liftIO $ putStrLn $ "RESULT:\n" ++ result
   return ()
@@ -34,6 +34,5 @@ main = do
       startSlave backend    
     ["manager", path, host, port]  -> do 
       putStrLn "Satrting Manager Node"
-      files <- getFiles path
-      startManager files host port
+      startManager path host port
     _ -> putStrLn "Bad parameters"

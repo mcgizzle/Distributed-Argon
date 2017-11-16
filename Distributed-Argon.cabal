@@ -26,6 +26,7 @@ library
                      , argon
                      , pipes
                      , pipes-safe
+                     , binary
   default-language:    Haskell2010
 
 executable Distributed-Argon
@@ -43,6 +44,7 @@ executable Distributed-Argon
                      , argon
                      , pipes
                      , pipes-safe
+                     , binary
   default-language:    Haskell2010
 
 test-suite Distributed-Argon-test

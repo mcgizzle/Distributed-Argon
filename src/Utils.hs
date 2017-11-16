@@ -1,5 +1,4 @@
 module Utils(
-getFiles,FileProd,
 plog,log,
 Command,
 runArgon
@@ -12,18 +11,12 @@ import Control.Distributed.Process
 import Prelude hiding (log)
 import System.Process
 import System.Directory
+import Data.List.Split
 
-import Argon
-import Pipes
-import Pipes.Core
-import Pipes.Prelude as P
-import Pipes.Safe
+-- Pretty Print
+format :: String -> String
+format s = splitOn
 
--- FILES
-type FileProd = Producer FilePath IO ()
-
-getFiles :: (MonadIO m, MonadSafe m) => FilePath -> Producer FilePath m ()
-getFiles = allFiles 
 
 -- LOG
 log :: String -> IO ()

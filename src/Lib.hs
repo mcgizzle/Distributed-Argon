@@ -9,13 +9,15 @@ import Control.Distributed.Process.Closure
 import Control.Distributed.Process.Node                     (initRemoteTable)
 import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
-import Prelude hiding (plog)
+import Prelude hiding (log)
 
 import Control.Monad.State
 
 import Utils
 
-import System.IO.Unsafe
+import Pipes
+import Pipes.Safe (runSafeT)
+import Pipes.Prelude as P hiding (show,length)
 
 type WorkQueue = ProcessId
 type Master = ProcessId
@@ -42,6 +44,7 @@ worker (manager, workQueue) = do
           run me 
         end () = do
           plog " Terminating worker "
+          send manager False
           return ()
 
 remotable['worker] 
@@ -49,26 +52,27 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: Files -> [NodeId] -> Process String
-manager files workers = do
+manager :: FilePath -> [NodeId] -> Process String
+manager path workers = do
   me <- getSelfPid
+ 
+  let source = getFiles path
+  let dispatch f = do id <- expect; send id f
   workQueue <- spawnLocal $ do 
-    forM_ files $ \f -> do
-      id <- expect
-      send id f
+    runSafeT $ runEffect $ for source $ lift . lift . dispatch
     forever $ do
       id <- expect
       send id ()
+  
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResults $ length files
+  getResult "" $ length workers
 
-getResults :: Int -> Process String
-getResults = run ""
+getResult :: String -> Int -> Process String
+getResult s count = 
+  receiveWait[match result, match done]
   where
-    run :: String -> Int -> Process String
-    run r 0 = return r
-    run r n = do
-      s <- expect
-      run (r ++ s) (n - 1)
-      
+    result r = getResult (s ++ r) count
+    done False 
+          | count == 1 = return s
+          | otherwise = getResult s (count - 1)
 

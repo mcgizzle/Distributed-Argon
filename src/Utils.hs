@@ -1,5 +1,5 @@
 module Utils(
-Files,getFiles,
+getFiles,FileProd,
 plog,log,
 Command,
 runArgon
@@ -13,11 +13,17 @@ import Prelude hiding (log)
 import System.Process
 import System.Directory
 
--- FILES
-type Files = [FilePath]
+import Argon
+import Pipes
+import Pipes.Core
+import Pipes.Prelude as P
+import Pipes.Safe
 
-getFiles :: FilePath -> IO Files
-getFiles path = fmap (\ f -> path ++ "/" ++ f) . filter (\ f -> head f /= '.') <$> getDirectoryContents path
+-- FILES
+type FileProd = Producer FilePath IO ()
+
+getFiles :: (MonadIO m, MonadSafe m) => FilePath -> Producer FilePath m ()
+getFiles = allFiles 
 
 -- LOG
 log :: String -> IO ()

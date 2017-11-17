@@ -9,4 +9,8 @@ Distributed-Argon uses a RESTful API implementing the 'master/slave' algorithm f
 ``` bash compile.sh ```
 
 ## To run
-``` bash run.sh <directory> ```
+
+### Start the worker nodes
+```bash workers.sh```
+### Start the mananger node
+```bash run.sh <directory> ```

@@ -54,7 +54,7 @@ worker (manager, workQueue) = do
           plog $ " Working on: " ++ show f
           result <- liftIO $ doWork f
           send manager result
-          plog " Finished work :) "
+          plog $ " Finished work on: " ++ show f ++ " :) "
           run me 
         end () = do
           plog " Terminating worker "

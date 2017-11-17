@@ -1,0 +1,34 @@
+language: haskell
+
+env:
+  - GHCVER=7.8.4 STACK_YAML=stack-7.8.yaml
+  - GHCVER=7.10.2 STACK_YAML=stack.yaml
+
+branches:
+  only:
+    - master
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.stack/
+
+before_install:
+  - mkdir -p $HOME/.local/bin
+  - export STACK_VERSION=0.1.8.0
+  - export PATH=$HOME/.local/bin:$PATH
+  - export STACK_FULLVERSION=stack-$STACK_VERSION-linux-x86_64
+  - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v$STACK_VERSION/$STACK_FULLVERSION.tar.gz | tar xz --strip-components 1 -C ~/.local/bin $STACK_FULLVERSION/stack;
+  - chmod a+x $HOME/.local/bin/stack
+  - stack --version
+
+install:
+  - stack setup --no-terminal
+
+script:
+  - stack test :argon-test --no-terminal --coverage
+
+after_script:
+  - travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.4.0/shc-linux-x64-$GHCVER.tar.bz2 | tar -xj
+  - ./shc argon argon-test

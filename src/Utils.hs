@@ -11,12 +11,6 @@ import Control.Distributed.Process
 import Prelude hiding (log)
 import System.Process
 import System.Directory
-import Data.List.Split
-
--- Pretty Print
-format :: String -> String
-format s = splitOn
-
 
 -- LOG
 log :: String -> IO ()

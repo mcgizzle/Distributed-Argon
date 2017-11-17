@@ -36,8 +36,8 @@ defaultConfig = Config { minCC       = 1
                        , outputMode  = Colored
                        }
 
-doWork :: String -> IO AnalysisResult
-doWork f = do (_, r) <- analyze defaultConfig f; return r
+doWork :: String -> IO String 
+doWork f = runArgon f
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -52,10 +52,8 @@ worker (manager, workQueue) = do
       where
         work f = do
           plog $ " Working on: " ++ show f
-          work <- liftIO $ doWork f
-          case work of
-           Left error  -> plog $ " There was an error computing `" ++ f ++ "` :" ++ error
-           Right work' -> send manager (f ++ " : " ++ format $ show $ work')
+          result <- liftIO $ doWork f
+          send manager result
           plog " Finished work :) "
           run me 
         end () = do

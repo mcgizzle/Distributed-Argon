@@ -3,7 +3,7 @@
 A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell.
 
 ## About
-Distributed-Argon uses a RESTful API, implementing the 'master/slave' algorithm, for distributing the workload of argon, a library which measures code complexity.
+Distributed-Argon uses cloud haskell, implementing the 'master/slave' algorithm, for distributing the workload of argon, a library which measures code complexity.
 
 ## Implementation
 A __manager__ node distributes the work to each __worker__ node. Each filepath is added to a queue by the __manager__ and distributed to the __workers__. The __workers__ evaluate the complexity, return the result and request more work. When all the work is complete, the __mananger__ returns the accumulated result. This implementation is often referred to as the self-scheduling or master/slave approach.
@@ -18,7 +18,7 @@ However, evaluating a single file on a node is overkill which leads to two optio
 ``` bash compile.sh ```
 
 ## To run
-Fire up two terminals and execute the following scripts.
+Fire up two shells and execute the following scripts.
 #### Start the worker nodes
 ```bash workers.sh```
 #### Start the mananger node

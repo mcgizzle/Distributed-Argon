@@ -22,6 +22,7 @@ library
                      , network-transport-tcp
                      , filepath, mtl
                      , process
+                     , temporary
                      , directory
                      , argon
                      , pipes

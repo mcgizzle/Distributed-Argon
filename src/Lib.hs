@@ -29,15 +29,8 @@ import Argon hiding (defaultConfig)
 type WorkQueue = ProcessId
 type Master = ProcessId
 
-defaultConfig = Config { minCC       = 1
-                       , exts        = []
-                       , headers     = []
-                       , includeDirs = []
-                       , outputMode  = Colored
-                       }
-
 doWork :: String -> IO String 
-doWork f = runArgon f
+doWork = runArgon
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -66,11 +59,12 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: FilePath -> [NodeId] -> Process String
-manager path workers = do
+manager :: Repo -> [NodeId] -> Process String
+manager (url,dir,commit) workers = do
   me <- getSelfPid
- 
-  let source = allFiles path
+  plog $ "\n\n --------------  Fetching commit:  "++ commit  ++"---------------------\n\n"
+  liftIO $ fetchCommit (url,dir,commit)
+  let source = allFiles dir
   let dispatch f = do id <- expect; send id f
   workQueue <- spawnLocal $ do 
     runSafeT $ runEffect $ for source $ lift . lift . dispatch

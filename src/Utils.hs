@@ -1,7 +1,8 @@
 module Utils(
 plog,log,
 Command,
-runArgon
+runArgon,
+Repo,getCommits,fetchCommit
 ) where
 
 import System.IO
@@ -30,27 +31,32 @@ sendCommand (cmd,arg) = do
   (_,Just hout,_,ph) <- createProcess (proc cmd $ words arg){ std_out = CreatePipe }
   hGetContents hout
 
-sendCommand_ :: Command -> IO ()
-sendCommand_ (cmd,arg) = createProcess (proc cmd $ words arg) >> return ()
- 
 -- UTIL COMMANDS
 cd :: String -> IO ()
-cd dir = sendCommand_ ("cd",dir)
+cd dir = callProcess "cd" [dir]
 
 -- ARGON
 runArgon :: String -> IO String
 runArgon file = sendCommand ("stack","exec argon "++file)
 
 -- GIT
-cloneRepo :: String -> IO ()
-cloneRepo repo = sendCommand_ ("git","clone "++repo)
+type Repo = (String,String,String)
 
-getCommits :: String -> IO [String]
-getCommits repo = do
-  cd repo
+cloneRepo :: String -> String -> IO ()
+cloneRepo url dir = do
+  exists <- doesDirectoryExist dir
+  unless exists $ callProcess "git" ["clone ",url]
+  cd dir
+  return ()
+
+getCommits :: String -> String -> IO [String]
+getCommits url dir = do
+  cloneRepo url dir
   commits <- sendCommand ("git","log --pretty=format:'%H'")
   return $ lines commits
 
-cloneCommit :: String -> IO ()
-cloneCommit commit = cd commit >> sendCommand_ ("git","reset --hard "++commit)
-
+fetchCommit :: Repo -> IO ()
+fetchCommit (url,dir,commit) = do
+  cloneRepo url dir
+  callProcess "git" ["reset","--hard ",commit]
+  return ()

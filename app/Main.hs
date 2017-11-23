@@ -15,13 +15,13 @@ import Prelude hiding (log)
 import Lib 
 import Utils
 
-startManager :: FilePath -> String -> String -> IO ()
-startManager path host port = do
+startManager :: [String] -> String -> String -> String -> IO ()
+startManager commits url host port = do
   backend <- initializeBackend host port rtable
   startMaster backend $ \workers -> do
-    result <- manager path workers
+    result <- mapM (\ commit -> manager (url,"Chat-Server",commit) workers) commits
     terminateAllSlaves backend
-    liftIO $ putStrLn $ "RESULT:\n" ++ result
+    liftIO $ mapM_ (\ r -> putStrLn $ "RESULT:\n" ++ r) result
   return ()
 
 main :: IO ()
@@ -32,7 +32,8 @@ main = do
       putStrLn "Starting Node as Worker"
       backend <- initializeBackend host port rtable
       startSlave backend    
-    ["manager", path, host, port]  -> do 
+    ["manager", url, host, port]  -> do 
       putStrLn "Satrting Manager Node"
-      startManager path host port
+      commits <- getCommits url "Chat-Server"
+      startManager commits url host port
     _ -> putStrLn "Bad parameters"

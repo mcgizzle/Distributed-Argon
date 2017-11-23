@@ -45,7 +45,7 @@ type Repo = (String,String,String)
 cloneRepo :: String -> String -> IO ()
 cloneRepo url dir = do
   exists <- doesDirectoryExist dir
-  unless exists $ callProcess "git" ["clone ",url]
+  unless exists $ callProcess "git" ["clone",url]
   cd dir
   return ()
 
@@ -58,5 +58,5 @@ getCommits url dir = do
 fetchCommit :: Repo -> IO ()
 fetchCommit (url,dir,commit) = do
   cloneRepo url dir
-  callProcess "git" ["reset","--hard ",commit]
+  callProcess "git" ["reset","--hard",commit]
   return ()

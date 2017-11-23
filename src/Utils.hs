@@ -16,6 +16,11 @@ import System.Directory
 
 import System.IO.Temp
 
+strip :: [a] -> [a]
+strip []  = []
+strip [x] = []
+strip xs  = tail (init xs)
+
 -- LOG
 log :: String -> IO ()
 log = liftIO . putStrLn 
@@ -47,13 +52,14 @@ cloneRepo url dir = do
   exists <- doesDirectoryExist dir
   unless exists $ callProcess "git" ["clone",url]
   cd dir
+  putStrLn $ "Directory: " ++ dir 
   return ()
 
 getCommits :: String -> String -> IO [String]
 getCommits url dir = do
   cloneRepo url dir
   commits <- sendCommand ("git","log --pretty=format:'%H'")
-  return $ lines commits
+  return $ map strip $ words commits
 
 fetchCommit :: Repo -> IO ()
 fetchCommit (url,dir,commit) = do

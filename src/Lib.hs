@@ -73,9 +73,9 @@ manager (url,dir,commit) workers = do
       send id ()
   
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResult "" $ length workers
+  getResult Map.empty $ length workers
 
-getResult :: String -> Int -> Process String
+getResult :: Result -> Int -> Process Result
 getResult s count = 
   receiveWait[match result, match done]
   where

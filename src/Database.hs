@@ -52,15 +52,23 @@ connStr = "host=localhost dbname=argon_test user=root password=root port=5432"
 
 data Response = InsertFail | InsertSuccess
 
-insertCommit :: String -> IO Response
+initDB :: IO ()
+initDB = undefined
+
+insertCommit :: String -> IO ()
 insertCommit commit = runDB query
   where 
     query = do
       time <- liftIO getCurrentTime
-      resp <- insertUnique $ CommitInfo commit time Nothing  
-      case resp of
-        Just _  -> return InsertSuccess
-        Nothing -> return InsertFail
+      insertUnique $ CommitInfo commit time Nothing  
+      return ()
+
+updateCommitEndTime :: String -> IO ()
+updateCommitEndTime commit = runDB query
+  where 
+    query = do
+      time <- liftIO getCurrentTime
+      updateWhere [CommitInfoCommit ==. commit ] [CommitInfoEnd_time =. Just time]
 
 insertResult :: Complexity -> IO Response
 insertResult = undefined
@@ -69,3 +77,4 @@ runDB query = runStderrLoggingT $ withPostgresqlPool connStr 10 $ \pool -> liftI
   flip runSqlPersistMPool pool $ do
     runMigration migrateAll
     query
+    return ()

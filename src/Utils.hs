@@ -58,11 +58,11 @@ cloneRepo url dir = do
 getCommits :: String -> String -> IO [String]
 getCommits url dir = do
   cloneRepo url dir
-  commits <- sendCommand ("git","log --pretty=format:'%H'")
+  commits <- sendCommand ("git","--git-dir "++ dir ++".git log --pretty=format:'%H'")
   return $ map strip $ words commits
 
 fetchCommit :: Repo -> IO ()
 fetchCommit (url,dir,commit) = do
   cloneRepo url dir
-  callProcess "git" ["reset","--hard",commit]
+  readCreateProcess ((proc "git" ["reset","--hard","--git-dir",dir ++".git",commit]){ cwd = Just dir}) ""
   return ()

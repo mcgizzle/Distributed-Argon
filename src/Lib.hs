@@ -11,12 +11,18 @@ import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
 import Prelude hiding (log)
 
+-- STM
+import Control.Concurrent 
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TVar
+
 -- Data
 import Data.Binary
 import Data.Either
 
 -- Library
 import Utils
+import Database
 
 -- Pipes
 import Pipes
@@ -46,12 +52,11 @@ worker (manager, workQueue) = do
         work f = do
           plog $ " Working on: " ++ show f
           result <- liftIO $ doWork f
-          send manager result
+          send manager (f,result)
           plog $ " Finished work on: " ++ show f ++ " :) "
           run me 
         end () = do
           plog " Terminating worker "
-          send manager False
           return ()
 
 remotable['worker] 
@@ -59,28 +64,39 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: Repo -> [NodeId] -> Process String
-manager (url,dir,commit) workers = do
+--manager :: Repo -> [NodeId] -> Int -> Process String
+manager (url,dir,commit) workers pool = do
   me <- getSelfPid
-  plog $ "\n\n --------------  Fetching commit:  "++ commit  ++"---------------------\n\n"
+  plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
+  count <- liftIO $ atomically $ newTVar (0) 
   liftIO $ fetchCommit (url,dir,commit)
+  liftIO $ runDB pool $ insertStartTime commit
+  
   let source = allFiles dir
-  let dispatch f = do id <- expect; send id f
   workQueue <- spawnLocal $ do 
-    runSafeT $ runEffect $ for source $ lift . lift . dispatch
+    runSafeT $ runEffect $ for source (\ f -> lift $ lift $ dispatch f commit pool)
+    total <- liftIO $ runDB pool $ fetchTotal commit
+    liftIO $ atomically $ writeTVar count total
     forever $ do
       id <- expect
       send id ()
-  
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResult Map.empty $ length workers
+  getResults count 0 commit pool
+  return ()
 
-getResult :: Result -> Int -> Process Result
-getResult s count = 
-  receiveWait[match result, match done]
-  where
-    result r = getResult (s ++ r ++ "\n") count
-    done False 
-          | count == 1 = return s
-          | otherwise = getResult s (count - 1)
+--dispatch :: FilePath -> String -> Process ()
+dispatch f commit pool = do 
+  liftIO $ runDB pool $ insertFile commit f
+  id <- expect
+  send id f
 
+
+--getResults :: TVar Int -> Int -> String -> IO ()
+getResults count curCount commit pool = do
+  count' <- liftIO $ atomically $ readTVar count
+  unless (curCount == count') $ do 
+    (f,res) <- expect :: Process (String,String)
+    plog $ "Received: "++ f
+    liftIO $ runDB pool $ insertResult commit (f,res)
+    getResults count (curCount + 1) commit pool
+      

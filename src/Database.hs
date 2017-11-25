@@ -14,67 +14,80 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 
+module Database(
+initDB,runDB,
+insertStartTime,insertEndTime,
+insertFile,insertResult,
+fetchTotal
+) where
+
 -- PERSISTENT
-import Control.Monad.IO.Class  (liftIO)
-import Control.Monad.Logger    (runStderrLoggingT)
+import Control.Monad.IO.Class
+import Control.Monad.Logger    (runStderrLoggingT,runNoLoggingT)
 import Database.Persist
 import Database.Persist.Postgresql
 import Database.Persist.TH
+import Control.Monad.Trans.Reader
+import Data.Pool
 
 -- JSON
 import qualified Data.Aeson.Parser
 import Data.Aeson.Compat 
 import Data.Aeson.Types
-import Data.Attoparsec.ByteString
+import Data.Attoparsec.ByteString hiding (count)
 import Data.ByteString (ByteString)
 
 -- TIME
 import Data.Time.LocalTime
 import Data.Time
 
+
 -- TODO -> Create data type for storing the complexity 
-type Complexity = String 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 CommitInfo json
-    commit String
-    start_time UTCTime default=CURRENT_TIME
+    commit_str String
+    start_time UTCTime 
     end_time UTCTime Maybe
     deriving Show
 CommitResults json
-    commit String
+    commit_str String
     file_name String
-    complexity Complexity
+    complexity String Maybe
     deriving Show
 |]
 
 connStr = "host=localhost dbname=argon_test user=root password=root port=5432" 
 
-data Response = InsertFail | InsertSuccess
+initDB :: IO ConnectionPool
+initDB = do
+  pool <- runNoLoggingT $ createPostgresqlPool connStr 10
+  runDB pool doMigrations
+  return pool
 
-initDB :: IO ()
-initDB = undefined
+runDB 
+  :: Control.Monad.IO.Class.MonadIO m => 
+     Data.Pool.Pool SqlBackend -> SqlPersistT IO a -> m a       
+runDB pool query = liftIO $ runSqlPool query pool
 
-insertCommit :: String -> IO ()
-insertCommit commit = runDB query
-  where 
-    query = do
-      time <- liftIO getCurrentTime
-      insertUnique $ CommitInfo commit time Nothing  
-      return ()
+doMigrations = runMigration migrateAll
 
-updateCommitEndTime :: String -> IO ()
-updateCommitEndTime commit = runDB query
-  where 
-    query = do
-      time <- liftIO getCurrentTime
-      updateWhere [CommitInfoCommit ==. commit ] [CommitInfoEnd_time =. Just time]
+insertStartTime commit = do
+  time <- liftIO getCurrentTime
+  insert $ CommitInfo commit time Nothing  
+  return ()
 
-insertResult :: Complexity -> IO Response
-insertResult = undefined
+insertEndTime commit = do
+  time <- liftIO getCurrentTime
+  updateWhere [CommitInfoCommit_str ==. commit ] [CommitInfoEnd_time =. Just time]
+  return ()
 
-runDB query = runStderrLoggingT $ withPostgresqlPool connStr 10 $ \pool -> liftIO $ do
-  flip runSqlPersistMPool pool $ do
-    runMigration migrateAll
-    query
-    return ()
+insertFile commit file = do
+  insert $ CommitResults commit file Nothing 
+  return ()
+
+insertResult commit (file,res) = do
+  updateWhere [CommitResultsFile_name ==. file] [CommitResultsComplexity =. Just res]
+  return ()
+
+fetchTotal commit = count [CommitResultsCommit_str ==. commit] 

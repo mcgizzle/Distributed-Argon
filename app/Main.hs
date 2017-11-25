@@ -14,14 +14,21 @@ import Prelude hiding (log)
 
 import Lib 
 import Utils
+import Database
 
-startManager :: [String] -> String -> String -> String -> IO ()
-startManager commits url host port = do
+startManager :: String -> String -> String -> IO ()
+startManager url host port = do
+  pool <- initDB
+  
+  commits <- getCommits url "Chat-Server"
+  
   backend <- initializeBackend host port rtable
+  
   startMaster backend $ \workers -> do
-    result <- mapM (\ commit -> manager (url,"Chat-Server",commit) workers) commits
+    mapM_ (\ commit -> manager (url,"Chat-Server",commit) workers pool) commits
     terminateAllSlaves backend
-    liftIO $ mapM_ (\ r -> putStrLn $ "RESULT:\n" ++ r) result
+    liftIO $ putStrLn "Results have been stored in database."
+  
   return ()
 
 main :: IO ()
@@ -34,6 +41,5 @@ main = do
       startSlave backend    
     ["manager", url, host, port]  -> do 
       putStrLn "Satrting Manager Node"
-      commits <- getCommits url "Chat-Server"
-      startManager commits url host port
+      startManager url host port
     _ -> putStrLn "Bad parameters"

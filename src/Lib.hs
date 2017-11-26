@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 module Lib where
 
 -- Cloud Haskell
@@ -11,12 +12,18 @@ import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
 import Prelude hiding (log)
 
+-- STM
+import Control.Concurrent 
+import Control.Concurrent.STM
+import Control.Concurrent.STM.TVar
+
 -- Data
 import Data.Binary
 import Data.Either
 
 -- Library
 import Utils
+import Database
 
 -- Pipes
 import Pipes
@@ -29,15 +36,8 @@ import Argon hiding (defaultConfig)
 type WorkQueue = ProcessId
 type Master = ProcessId
 
-defaultConfig = Config { minCC       = 1
-                       , exts        = []
-                       , headers     = []
-                       , includeDirs = []
-                       , outputMode  = Colored
-                       }
-
 doWork :: String -> IO String 
-doWork f = runArgon f
+doWork = runArgon
 
 worker :: (Master, WorkQueue) -> Process ()
 worker (manager, workQueue) = do
@@ -53,12 +53,11 @@ worker (manager, workQueue) = do
         work f = do
           plog $ " Working on: " ++ show f
           result <- liftIO $ doWork f
-          send manager result
+          send manager (f,result)
           plog $ " Finished work on: " ++ show f ++ " :) "
           run me 
         end () = do
           plog " Terminating worker "
-          send manager False
           return ()
 
 remotable['worker] 
@@ -66,27 +65,41 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: FilePath -> [NodeId] -> Process String
-manager path workers = do
+--manager :: Repo -> [NodeId] -> Int -> Process String
+manager runData@Run{..} workers pool = do
   me <- getSelfPid
- 
-  let source = allFiles path
-  let dispatch f = do id <- expect; send id f
-  workQueue <- spawnLocal $ do 
-    runSafeT $ runEffect $ for source $ lift . lift . dispatch
-    forever $ do
-      id <- expect
-      send id ()
+  plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
+  count <- liftIO $ atomically $ newTVar (0) 
+  liftIO $ fetchCommit (url,dir,commit)
+  liftIO $ runDB pool $ insertStartTime id commit
   
+  let source = allFiles dir
+  workQueue <- spawnLocal $ do 
+    runSafeT $ runEffect $ for source (\ f -> lift $ lift $ dispatch id f commit pool)
+    total <- liftIO $ runDB pool $ fetchTotal id commit
+    liftIO $ atomically $ writeTVar count total
+    forever $ do
+      pid <- expect
+      send pid ()
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResult "" $ length workers
+  getResults id count 0 commit pool
+  
+  liftIO $ runDB pool $ insertEndTime id commit
+  return ()
 
-getResult :: String -> Int -> Process String
-getResult s count = 
-  receiveWait[match result, match done]
-  where
-    result r = getResult (s ++ r ++ "\n") count
-    done False 
-          | count == 1 = return s
-          | otherwise = getResult s (count - 1)
+--dispatch :: FilePath -> String -> Process ()
+dispatch id f commit pool = do 
+  liftIO $ runDB pool $ insertFile id commit f
+  pid <- expect
+  send pid f
 
+
+--getResults :: TVar Int -> Int -> String -> IO ()
+getResults id count curCount commit pool = do
+  count' <- liftIO $ atomically $ readTVar count
+  unless (curCount == count') $ do 
+    (f,res) <- expect :: Process (String,String)
+    plog $ "Received: "++ f
+    liftIO $ runDB pool $ insertResult id commit f res
+    getResults id count (curCount + 1) commit pool
+      

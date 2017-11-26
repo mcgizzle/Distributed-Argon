@@ -15,18 +15,31 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib, Utils
+  exposed-modules:     Lib, Utils, Database
   build-depends:       base >= 4.7 && < 5
                      , distributed-process 
                      , distributed-process-simplelocalnet 
                      , network-transport-tcp
                      , filepath, mtl
                      , process
+                     , temporary
                      , directory
                      , argon
                      , pipes
                      , pipes-safe
                      , binary
+                     , time
+                     , transformers
+                     , monad-logger
+                     , persistent
+                     , persistent-postgresql
+                     , persistent-template
+                     , resource-pool
+                     , aeson
+                     , aeson-compat
+                     , stm
+                     , bytestring
+                     , attoparsec
   default-language:    Haskell2010
 
 executable Distributed-Argon

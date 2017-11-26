@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecordWildCards #-}
 module Lib where
 
 -- Cloud Haskell
@@ -65,38 +66,40 @@ rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
 --manager :: Repo -> [NodeId] -> Int -> Process String
-manager (url,dir,commit) workers pool = do
+manager runData@Run{..} workers pool = do
   me <- getSelfPid
   plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
   count <- liftIO $ atomically $ newTVar (0) 
   liftIO $ fetchCommit (url,dir,commit)
-  liftIO $ runDB pool $ insertStartTime commit
+  liftIO $ runDB pool $ insertStartTime id commit
   
   let source = allFiles dir
   workQueue <- spawnLocal $ do 
-    runSafeT $ runEffect $ for source (\ f -> lift $ lift $ dispatch f commit pool)
-    total <- liftIO $ runDB pool $ fetchTotal commit
+    runSafeT $ runEffect $ for source (\ f -> lift $ lift $ dispatch id f commit pool)
+    total <- liftIO $ runDB pool $ fetchTotal id commit
     liftIO $ atomically $ writeTVar count total
     forever $ do
-      id <- expect
-      send id ()
+      pid <- expect
+      send pid ()
   forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResults count 0 commit pool
+  getResults id count 0 commit pool
+  
+  liftIO $ runDB pool $ insertEndTime id commit
   return ()
 
 --dispatch :: FilePath -> String -> Process ()
-dispatch f commit pool = do 
-  liftIO $ runDB pool $ insertFile commit f
-  id <- expect
-  send id f
+dispatch id f commit pool = do 
+  liftIO $ runDB pool $ insertFile id commit f
+  pid <- expect
+  send pid f
 
 
 --getResults :: TVar Int -> Int -> String -> IO ()
-getResults count curCount commit pool = do
+getResults id count curCount commit pool = do
   count' <- liftIO $ atomically $ readTVar count
   unless (curCount == count') $ do 
     (f,res) <- expect :: Process (String,String)
     plog $ "Received: "++ f
-    liftIO $ runDB pool $ insertResult commit (f,res)
-    getResults count (curCount + 1) commit pool
+    liftIO $ runDB pool $ insertResult id commit f res
+    getResults id count (curCount + 1) commit pool
       

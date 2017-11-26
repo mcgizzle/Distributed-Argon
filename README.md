@@ -3,9 +3,9 @@
 A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell.
 
 ## About
-Distributed-Argon uses cloud haskell, implementing the _work stealing_ algorithm, for distributing the workload of argon, a library which measures code complexity.
+Distributed-Argon uses cloud haskell, implementing the _work stealing_ algorithm, for distributing the workload of argon, a library which measures code complexity. 
 
-The program accepts a GitHub repository and then calculates the complexity for every file of every commit in the project.
+The program accepts a GitHub repository and then calculates the complexity for every file of every commit in the project, storing the results in a database.
 
 ## Implementation
 A __manager__ node distributes the work to each __worker__ node. The work is distributed on a per-file basis. Each filepath is added to a queue by the __manager__ and distributed to the __workers__. The __workers__ evaluate the complexity, return the result and request more work. This implementation is often referred to as the self-scheduling or work-stealing pattern.
@@ -52,6 +52,7 @@ The number of workers can be edited by altering the worker.sh script.
 
 ## Viewing the results
 I have built a graphical display of the results using Chart.js. A link to that repo can be found [here](https://github.com/McGizzle/Charting-Complexity)
+
 Alternatively, as all the necessary information is stored in a database, it can therefore be manipulated in any way you see fit.
 
 ### Thanks

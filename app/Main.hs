@@ -25,9 +25,13 @@ startManager url host port = do
   backend <- initializeBackend host port rtable
   
   startMaster backend $ \workers -> do
-    mapM_ (\ commit -> manager (url,"Chat-Server",commit) workers pool) commits
+    id <- runDB pool $ insertTotalStartTime url (length workers) 
+    mapM_ (\ commit -> do
+              let runData = Run url "Chat-Server" (length workers) commit id
+              manager runData workers pool) commits
+    runDB pool $ insertTotalEndTime url (length workers)
     terminateAllSlaves backend
-    liftIO $ putStrLn "Results have been stored in database."
+    liftIO $ putStrLn "\nResults have been stored in the database."
   
   return ()
 

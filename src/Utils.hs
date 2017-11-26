@@ -33,7 +33,7 @@ sendCommand (cmd,arg) = do
 
 -- ARGON
 runArgon :: String -> IO String
-runArgon file = sendCommand ("stack","exec argon "++file)
+runArgon file = sendCommand ("stack","exec -- argon --json "++file)
 
 -- GIT
 type Repo = (String,String,String)

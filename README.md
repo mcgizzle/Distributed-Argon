@@ -21,13 +21,13 @@ __Repository__ Relation
 | ---- | --- | --- | --- | --- |
 | 1 | https://github.com/McGizzle/Distributed-Argon/ | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 |
 
-__Commit Results__ Relation
+__Commit Info__ Relation
 
 | Id | Commit | Start Time | End Time |
 | --- | --- | --- | --- |
 | 1 | 22939d42bac82cca4496efaed1ca94e1964eefd6 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:02:36.830273+00 |
 
-__Commit Info__ Relation
+__Commit Results__ Relation
 
 | Id | Commit | File Path | Complexity |
 | --- | --- | ---- | --- |

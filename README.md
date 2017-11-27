@@ -1,6 +1,6 @@
 # Distributed Argon
 
-A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell.
+A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell with a PostgreSQL database.
 
 ## About
 Distributed-Argon uses cloud haskell, implementing the _work stealing_ algorithm, for distributing the workload of argon, a library which measures code complexity. 
@@ -37,9 +37,10 @@ __Commit Results__
 
 
 ## Prerequisites
-You must have a running [PostgreSQL](https://www.postgresql.org/) database in order for the program to successfully store the data.
+* [PostgreSQL](https://www.postgresql.org/) to store the data.
+* [Stack](https://docs.haskellstack.org/en/stable/README/) to build and run the project.
 
-## To compile with stack
+## To build with stack
 ``` stack build ```
 
 ## To run

@@ -15,19 +15,21 @@ The __manager__ stores the results it receives from the __workers__ in a databas
 ## The database
 A PostgreSQL database is used to store the revelant information relating to a repositories complexity and the time taken with various amounts of nodes.
 
-__Repository__ Relation
+### Relations
+
+__Repository__ 
 
 | Id | Url                                           | Nodes | Start Time                    | End time                     |
 | ---- | --- | --- | --- | --- |
 | 1 | https://github.com/McGizzle/Distributed-Argon/ | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 |
 
-__Commit Info__ Relation
+__Commit Info__ 
 
 | Id | Commit | Start Time | End Time |
 | --- | --- | --- | --- |
 | 1 | 22939d42bac82cca4496efaed1ca94e1964eefd6 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:02:36.830273+00 |
 
-__Commit Results__ Relation
+__Commit Results__
 
 | Id | Commit | File Path | Complexity |
 | --- | --- | ---- | --- |

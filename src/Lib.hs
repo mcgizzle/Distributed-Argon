@@ -69,7 +69,7 @@ rtable = Lib.__remoteTable initRemoteTable
 manager runData@Run{..} workers pool = do
   me <- getSelfPid
   plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
-  count <- liftIO $ atomically $ newTVar (0) 
+  count <- liftIO $ atomically $ newTVar 0 
   liftIO $ fetchCommit (url,dir,commit)
   liftIO $ runDB pool $ insertStartTime id commit
   
@@ -99,7 +99,7 @@ getResults id count curCount commit pool = do
   count' <- liftIO $ atomically $ readTVar count
   unless (curCount == count') $ do 
     (f,res) <- expect :: Process (String,String)
-    plog $ "Received: "++ f
+    plog $ " Received: "++ f
     liftIO $ runDB pool $ insertResult id commit f res
     getResults id count (curCount + 1) commit pool
       

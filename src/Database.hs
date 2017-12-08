@@ -43,9 +43,11 @@ import Data.ByteString (ByteString)
 import Data.Time.LocalTime
 import Data.Time
 
+-- READER
+import Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
+
 -- MISC
 import Data.Maybe (fromJust)
--- TODO -> Create data type for storing the complexity 
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Repository json
@@ -68,64 +70,61 @@ CommitResults json
     deriving Show
 |]
 
-data Run = Run {
-  url :: String,
-  dir :: FilePath,
-  nodes :: Int,
-  commit :: String,
-  id :: Key Repository
-}
-
-connStr = "host=localhost dbname=argon_test user=root password=root port=5432" 
-
-initDB :: IO ConnectionPool
-initDB = do
-  pool <- runNoLoggingT $ createPostgresqlPool connStr 10
-  runDB pool doMigrations
-  return pool
-
-runDB 
-  :: Control.Monad.IO.Class.MonadIO m => 
-     Data.Pool.Pool SqlBackend -> SqlPersistT IO a -> m a       
-runDB pool query = liftIO $ runSqlPool query pool
-
+doMigrations :: SqlPersistT IO ()
 doMigrations = runMigration migrateAll
 
-insertStartTime id commit = do
+--runDB :: SqlPersistT IO b -> m b
+runDB query = do
+  pool <- asks poolConfig
+  liftIO $ runSqlPool query pool
+
+
+insertStartTime = do
   time <- liftIO getCurrentTime
-  insert $ CommitInfo id commit time Nothing  
+  id <- asks idConfig
+  commit <- asks commitConfig
+  runDB $ insert $ CommitInfo id commit time Nothing  
   return ()
 
-insertEndTime id commit = do
+insertEndTime = do
   time <- liftIO getCurrentTime
-  updateWhere [ CommitInfoRepositoryId ==. id
-              , CommitInfoCommit_str ==. commit ] 
-              [ CommitInfoEnd_time =. Just time ]
+  id <- asks idConfig
+  commit <- asks commitConfig
+  runDB $ updateWhere [ CommitInfoRepositoryId ==. id
+                      , CommitInfoCommit_str ==. commit ] 
+                      [ CommitInfoEnd_time =. Just time ]
   return ()
 
-insertFile id commit file = do
-  insert $ CommitResults id commit file Nothing 
+insertFile file = do
+  id <- asks idConfig
+  commit <- asks commitConfig
+  runDB $ insert $ CommitResults id commit file Nothing 
   return ()
 
-insertResult id commit file res = do
-  updateWhere [ CommitResultsRepositoryId ==. id
+insertResult file res = do
+  id <- asks idConfig
+  commit <- asks commitConfig
+  runDB $ updateWhere [ CommitResultsRepositoryId ==. id
               , CommitResultsFile_name ==. file ] 
               [CommitResultsComplexity =. Just res]
   return ()
 
 insertTotalStartTime url nodes = do
   time <- liftIO getCurrentTime
-  id <- insert $ Repository url nodes time Nothing
+  id <- runDB $ insert $ Repository url nodes time Nothing
   return id
 
 insertTotalEndTime url nodes = do
   time <- liftIO getCurrentTime
-  updateWhere [ RepositoryNodes ==. nodes
-              , RepositoryUrl ==. url] 
-              [RepositoryEnd_time =. Just time]
+  runDB $ updateWhere [ RepositoryNodes ==. nodes
+                      , RepositoryUrl ==. url] 
+                      [ RepositoryEnd_time =. Just time]
   return ()
 
 
-fetchTotal id commit = count [ CommitResultsRepositoryId ==. id
-                             , CommitResultsCommit_str ==. commit]
+fetchTotal = do
+  id <- asks idConfig
+  commit <- asks commitConfig
+  runDB $ count [ CommitResultsRepositoryId ==. id
+                , CommitResultsCommit_str ==. commit]
 

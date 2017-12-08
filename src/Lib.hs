@@ -65,41 +65,39 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
---manager :: Repo -> [NodeId] -> Int -> Process String
-manager runData@Run{..} workers pool = do
+manager :: [NodeId] -> AppProcess String
+manager workers = do
   me <- getSelfPid
   plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
   count <- liftIO $ atomically $ newTVar 0 
-  liftIO $ fetchCommit (url,dir,commit)
-  liftIO $ runDB pool $ insertStartTime id commit
-  
+  liftIO fetchCommit
+  lftiIO insertStartTime
   let source = allFiles dir
-  workQueue <- spawnLocal $ do 
-    runSafeT $ runEffect $ for source (\ f -> lift $ lift $ dispatch id f commit pool)
-    total <- liftIO $ runDB pool $ fetchTotal id commit
+  workQueue <- lift $ spawnLocal $ do 
+    runSafeT $ runEffect $ for source $ lift . lift . dispatch
+    total <- liftIO fetchTotal
     liftIO $ atomically $ writeTVar count total
     forever $ do
       pid <- expect
       send pid ()
-  forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResults id count 0 commit pool
-  
-  liftIO $ runDB pool $ insertEndTime id commit
+  lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
+  getResults count 0
+  liftIO insertEndTime
   return ()
 
 --dispatch :: FilePath -> String -> Process ()
-dispatch id f commit pool = do 
-  liftIO $ runDB pool $ insertFile id commit f
+dispatch f = do 
+  liftIO $ insertFile f
   pid <- expect
   send pid f
 
 
---getResults :: TVar Int -> Int -> String -> IO ()
-getResults id count curCount commit pool = do
+getResults :: TVar Int -> Int -> AppProcess ()
+getResults count curCount = do
   count' <- liftIO $ atomically $ readTVar count
   unless (curCount == count') $ do 
     (f,res) <- expect :: Process (String,String)
     plog $ " Received: "++ f
-    liftIO $ runDB pool $ insertResult id commit f res
-    getResults id count (curCount + 1) commit pool
+    liftIO $ insertResult f res
+    getResults count (curCount + 1) 
       

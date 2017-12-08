@@ -38,6 +38,7 @@ library
                      , aeson
                      , aeson-compat
                      , stm
+                     , split
                      , bytestring
                      , attoparsec
   default-language:    Haskell2010

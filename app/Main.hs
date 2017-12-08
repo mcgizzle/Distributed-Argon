@@ -18,21 +18,18 @@ import Database
 
 startManager :: String -> String -> String -> IO ()
 startManager url host port = do
-  pool <- initDB
-  
-  commits <- getCommits url "Chat-Server"
-  
+  pool <- makePool  
+  commits <- getCommits url 
   backend <- initializeBackend host port rtable
-  
+  runSqlPool doMigrations pool 
+  id <- runDB $ insertTotalStartTime url (length workers) 
   startMaster backend $ \workers -> do
-    id <- runDB pool $ insertTotalStartTime url (length workers) 
     mapM_ (\ commit -> do
-              let runData = Run url "Chat-Server" (length workers) commit id
-              manager runData workers pool) commits
-    runDB pool $ insertTotalEndTime url (length workers)
-    terminateAllSlaves backend
-    liftIO $ putStrLn "\nResults have been stored in the database."
-  
+      config <- initConfig url commit id
+      runReaderT manager config) commits
+  runSqlPool (insertTotalEndTime url (length workers)) pool
+  terminateAllSlaves backend
+  liftIO $ putStrLn "\nResults have been stored in the database."
   return ()
 
 main :: IO ()

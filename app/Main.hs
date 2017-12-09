@@ -10,25 +10,30 @@ import System.Environment                                 (getArgs)
 import System.Exit
 import System.FilePath
 
+import Database.Persist.Sql
+import Control.Monad.Reader
+
 import Prelude hiding (log)
 
 import Lib 
 import Utils
 import Database
+import Config
 
+  
 startManager :: String -> String -> String -> IO ()
 startManager url host port = do
   pool <- makePool  
   commits <- getCommits url 
   backend <- initializeBackend host port rtable
   runSqlPool doMigrations pool 
-  id <- runDB $ insertTotalStartTime url (length workers) 
   startMaster backend $ \workers -> do
+    id <- liftIO $ runSqlPool (insertTotalStartTime url (length workers)) pool
     mapM_ (\ commit -> do
-      config <- initConfig url commit id
-      runReaderT manager config) commits
-  runSqlPool (insertTotalEndTime url (length workers)) pool
-  terminateAllSlaves backend
+      config <- liftIO initConfig 
+      runReaderT (manager id commit url workers) config) commits
+    terminateAllSlaves backend
+    liftIO $ runSqlPool (insertTotalEndTime url (length workers)) pool
   liftIO $ putStrLn "\nResults have been stored in the database."
   return ()
 

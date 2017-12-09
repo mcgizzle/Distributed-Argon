@@ -12,6 +12,7 @@
 
 module Utils(
 plog,log,
+getDir,getRecursiveContents,
 Command,
 runArgon,
 Repo,getCommits,fetchCommit
@@ -26,50 +27,22 @@ import System.Process
 import System.Directory
 
 import System.IO.Temp
-import Control.Monad.Reader
 import Control.Distributed.Process
 
 import Data.List.Split
 
-import Database.Persist.Sql (runSqlPool)
-import Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
-import Database.Persist.Sql (SqlPersistT, runMigration, runSqlPool)
-import Database.Persist.TH  (mkMigrate, mkPersist, persistLowerCase,
-                                       share, sqlSettings)
-import Database.Persist.Postgresql (ConnectionPool, ConnectionString,
-                                    createPostgresqlPool)
-import Control.Monad.Logger (runNoLoggingT, runStdoutLoggingT)
-import Control.Monad.Reader (MonadReader, ReaderT, asks, runReaderT,MonadIO)
-
--- Reader
-data AppConfig = AppConfig {
-                              poolConfig :: ConnectionPool,
-                              urlConfig :: String,
-                              commitConfig :: String,
-                              idConfig :: Int              
-                           }
-type AppProcess = ReaderT AppConfig Process
-
---connStr :: ConnectionString
-connStr = "host=localhost dbname=fs_dev user=root password=root port=5432"
-
-initConfig :: String -> String -> Int -> IO AppConfig
-initConfig commit url id = do
-        p <- makePool 
-        return AppConfig {
-                poolConfig = p,
-                urlConfig = url,
-                commitConfig = commit,
-                idConfig = id
-                          }
-makePool :: IO ConnectionPool
-makePool = do
-        conn <- getConnString
-        runStdoutLoggingT (createPostgresqlPool conn 1)
-
-
-getConnString :: IO ConnectionString
-getConnString = return connStr
+-- MISC
+getRecursiveContents :: FilePath -> IO [FilePath]
+getRecursiveContents topdir = do
+  names <- getDirectoryContents topdir
+  let properNames = filter (\f -> head f /= '.' && f /= "argon") names
+  paths <- forM properNames $ \name -> do
+    let path = topdir </> name
+    isDirectory <- doesDirectoryExist path
+    if isDirectory 
+       then getRecursiveContents path 
+       else return [path] 
+  return (concat paths)
 
 -- LOG
 log :: String -> IO ()

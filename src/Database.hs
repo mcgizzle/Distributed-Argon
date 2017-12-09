@@ -1,27 +1,19 @@
 {-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE ScopedTypeVariables        #-}
 {-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE QuasiQuotes                #-}
-{-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 
 module Database(
-Run(..),
-initDB,runDB,
+runDB, doMigrations,
 insertStartTime,insertEndTime,insertTotalStartTime,insertTotalEndTime,
 insertFile,insertResult,
 fetchTotal
 ) where
-
 
 -- PERSISTENT
 import Control.Monad.IO.Class
@@ -29,7 +21,6 @@ import Control.Monad.Logger    (runStderrLoggingT,runNoLoggingT)
 import Database.Persist
 import Database.Persist.Postgresql
 import Database.Persist.TH
-import Control.Monad.Trans.Reader
 import Data.Pool
 
 -- JSON
@@ -49,82 +40,60 @@ import Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
 -- MISC
 import Data.Maybe (fromJust)
 
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Repository json
-    url String
-    nodes Int
-    start_time UTCTime
-    end_time UTCTime Maybe
-    deriving Show
-CommitInfo json
-    repositoryId RepositoryId
-    commit_str String
-    start_time UTCTime 
-    end_time UTCTime Maybe
-    deriving Show
-CommitResults json
-    repositoryId RepositoryId
-    commit_str String
-    file_name String
-    complexity String Maybe
-    deriving Show
-|]
+import Utils
+import Config
+import Models
 
 doMigrations :: SqlPersistT IO ()
 doMigrations = runMigration migrateAll
 
---runDB :: SqlPersistT IO b -> m b
+runDB :: SqlPersistT IO b -> AppProcess b
 runDB query = do
   pool <- asks poolConfig
   liftIO $ runSqlPool query pool
 
-
-insertStartTime = do
+insertStartTime :: Key Repository -> String ->  AppProcess ()
+insertStartTime id commit = do
   time <- liftIO getCurrentTime
-  id <- asks idConfig
-  commit <- asks commitConfig
   runDB $ insert $ CommitInfo id commit time Nothing  
   return ()
 
-insertEndTime = do
+insertEndTime :: Key Repository -> String -> AppProcess ()
+insertEndTime id commit = do
   time <- liftIO getCurrentTime
-  id <- asks idConfig
-  commit <- asks commitConfig
   runDB $ updateWhere [ CommitInfoRepositoryId ==. id
                       , CommitInfoCommit_str ==. commit ] 
                       [ CommitInfoEnd_time =. Just time ]
   return ()
 
-insertFile file = do
-  id <- asks idConfig
-  commit <- asks commitConfig
+insertFile :: Key Repository -> String -> String -> AppProcess ()
+insertFile id commit file = do
   runDB $ insert $ CommitResults id commit file Nothing 
   return ()
 
-insertResult file res = do
-  id <- asks idConfig
-  commit <- asks commitConfig
+insertResult :: Key Repository -> String -> String -> String -> AppProcess ()
+insertResult id commit file res = do
   runDB $ updateWhere [ CommitResultsRepositoryId ==. id
               , CommitResultsFile_name ==. file ] 
               [CommitResultsComplexity =. Just res]
   return ()
 
+--insertTotalStartTime :: String -> Int -> AppProcess (Key Repository)
 insertTotalStartTime url nodes = do
   time <- liftIO getCurrentTime
-  id <- runDB $ insert $ Repository url nodes time Nothing
+  id <- insert $ Repository url nodes time Nothing
   return id
 
+--insertTotalEndTime :: String -> Int -> AppProcess ()
 insertTotalEndTime url nodes = do
   time <- liftIO getCurrentTime
-  runDB $ updateWhere [ RepositoryNodes ==. nodes
+  updateWhere [ RepositoryNodes ==. nodes
                       , RepositoryUrl ==. url] 
                       [ RepositoryEnd_time =. Just time]
   return ()
 
-
-fetchTotal = do
-  id <- asks idConfig
-  commit <- asks commitConfig
+fetchTotal :: Key Repository -> String -> AppProcess Int
+fetchTotal id commit = do
   runDB $ count [ CommitResultsRepositoryId ==. id
                 , CommitResultsCommit_str ==. commit]
 

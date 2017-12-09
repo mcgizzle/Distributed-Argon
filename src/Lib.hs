@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Lib where
 
 -- Cloud Haskell
@@ -24,12 +25,17 @@ import Data.Either
 -- Library
 import Utils
 import Database
+import Config
+import Models
 
 -- Pipes
 import Pipes
 import Pipes.Safe (runSafeT)
 import Pipes.Prelude as P hiding (show,length)
 import GHC.Generics (Generic)
+
+-- Reader
+import Control.Monad.Reader 
 
 import Argon hiding (defaultConfig)
 
@@ -65,39 +71,29 @@ remotable['worker]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-manager :: [NodeId] -> AppProcess String
-manager workers = do
-  me <- getSelfPid
-  plog $ "\n\n ---  Fetching commit:  "++ commit  ++"------\n\n"
-  count <- liftIO $ atomically $ newTVar 0 
-  liftIO fetchCommit
-  lftiIO insertStartTime
-  let source = allFiles dir
+--manager :: Key Repository -> String -> String -> [NodeId] -> AppProcess ()
+manager id commit url workers = do
+  me <- lift getSelfPid
+  liftIO $ fetchCommit (url,commit)
+  lift $ plog "\n\n -----  WORKING ON NEXT COMMIT ------\n\n"
+  files <- liftIO $ getRecursiveContents (getDir url)
+  Control.Monad.Reader.mapM_ (insertFile id commit) files
+  insertStartTime id commit
   workQueue <- lift $ spawnLocal $ do 
-    runSafeT $ runEffect $ for source $ lift . lift . dispatch
-    total <- liftIO fetchTotal
-    liftIO $ atomically $ writeTVar count total
+    forM_ files (\ f -> do pid <- expect; send pid f) 
     forever $ do
       pid <- expect
       send pid ()
   lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResults count 0
-  liftIO insertEndTime
+  getResults 0 (length files)
+  insertEndTime id commit
   return ()
-
---dispatch :: FilePath -> String -> Process ()
-dispatch f = do 
-  liftIO $ insertFile f
-  pid <- expect
-  send pid f
-
-
-getResults :: TVar Int -> Int -> AppProcess ()
-getResults count curCount = do
-  count' <- liftIO $ atomically $ readTVar count
-  unless (curCount == count') $ do 
-    (f,res) <- expect :: Process (String,String)
-    plog $ " Received: "++ f
-    liftIO $ insertResult f res
-    getResults count (curCount + 1) 
-      
+  where 
+    getResults :: Int -> Int -> AppProcess ()
+    getResults curCount total = do
+      unless (curCount == total) $ do 
+        (f,res) <- lift expect
+        lift $ plog $ " Received: "++ f
+        insertResult id commit f res
+        getResults (curCount + 1) total
+     

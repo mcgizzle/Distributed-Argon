@@ -11,6 +11,7 @@ import System.Exit
 import System.FilePath
 
 import Prelude hiding (log)
+import Data.List.Split
 
 import Lib 
 import Utils
@@ -19,15 +20,13 @@ import Database
 startManager :: String -> String -> String -> IO ()
 startManager url host port = do
   pool <- initDB
-  
-  commits <- getCommits url "Chat-Server"
-  
+  let dir = getDir url
+  commits <- getCommits url dir
   backend <- initializeBackend host port rtable
-  
   startMaster backend $ \workers -> do
     id <- runDB pool $ insertTotalStartTime url (length workers) 
     mapM_ (\ commit -> do
-              let runData = Run url "Chat-Server" (length workers) commit id
+              let runData = Run url dir (length workers) commit id
               manager runData workers pool) commits
     runDB pool $ insertTotalEndTime url (length workers)
     terminateAllSlaves backend

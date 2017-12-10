@@ -40,6 +40,7 @@ library
                      , stm
                      , bytestring
                      , attoparsec
+                     , split
   default-language:    Haskell2010
 
 executable Distributed-Argon
@@ -57,6 +58,7 @@ executable Distributed-Argon
                      , argon
                      , pipes
                      , pipes-safe
+                     , split
                      , binary
   default-language:    Haskell2010
 

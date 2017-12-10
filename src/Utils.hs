@@ -1,4 +1,5 @@
 module Utils(
+getDir,
 plog,log,
 Command,
 runArgon,
@@ -15,6 +16,10 @@ import System.Process
 import System.Directory
 
 import System.IO.Temp
+import Data.List.Split
+-- MIC
+getDir :: String -> String
+getDir = last . splitOn "/" 
 
 -- LOG
 log :: String -> IO ()
@@ -29,6 +34,7 @@ type Command = (String,String)
 sendCommand :: Command -> IO String
 sendCommand (cmd,arg) = do
   (_,Just hout,_,ph) <- createProcess (proc cmd $ words arg){ std_out = CreatePipe }
+  Process.waitForProcess ph
   hGetContents hout
 
 -- ARGON

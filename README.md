@@ -5,7 +5,7 @@ A distributed implementation of [argon](https://github.com/rubik/argon) built us
 ## About
 Distributed-Argon uses cloud haskell, implementing the _work-stealing_ and the _master/slave_ algorithm, for distributing the workload of argon, a library which measures code complexity. 
 
-The program accepts a GitHub repository and then calculates the complexity for every file of every commit in the project, storing the results in a database. Another repository [Charting-Complexity]() was used to generate the graphs.
+The program accepts a GitHub repository and then calculates the complexity for every file of every commit in the project, storing the results in a database. I created another repository [Charting-Complexity]() to generate the graphs.
 
 ## Implementation
 I decided to implement two algorithms and graph their results against eachother.

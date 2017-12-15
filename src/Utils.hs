@@ -26,7 +26,7 @@ import Control.Exception
 import Prelude hiding (log)
 import System.Process
 import System.Directory
-
+import Control.Monad
 import System.IO.Temp
 import Control.Distributed.Process
 
@@ -83,14 +83,14 @@ getCommits url = do
   commits <- sendCommand ("git","--git-dir "++ (getDir url) ++"/.git log --pretty=format:'%H'")
   return $ map strip $ words commits
 
-fetchCommit :: AppProcess ()
+fetchCommit :: (String,String) -> IO ()
 fetchCommit (url,commit) = do
   cloneRepo url
   readCreateProcess ((proc "git" ["reset","--hard",commit]){ cwd = Just (getDir url)}) ""
   return ()
 
 clearRepo :: String -> IO ()
-clearRepo url = void $ callProcess dir ["rm","-rf",getDir url]
+clearRepo url = void $ callProcess "rm" ["-rf",getDir url]
 
 
 strip :: [a] -> [a]

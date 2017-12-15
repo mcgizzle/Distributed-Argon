@@ -45,6 +45,7 @@ import Argon hiding (defaultConfig)
 type WorkQueue = ProcessId
 type Master = ProcessId
 
+-- Worker functions ---------------------------------------------------------------
 doWork :: String -> IO String 
 doWork = runArgon
 
@@ -75,16 +76,12 @@ remotable['worker,'slave]
 
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
-
+----------------------------------------------------------------------------------
+-- Useful lift function for processes ---------------------------------------------
 liftP :: (Monad m, Monad (t1 m), MonadTrans t, MonadTrans t1) => m a -> t (t1 m) a
 liftP p = lift $ lift p
 
-getPid :: AppProcess ProcessId
-getPid = do
-  (p:pids) <- lift get
-  lift $ put (pids ++ [p])
-  return p
-
+-- Alogrithim Manager ------------------------------------------------------------
 runAlg p commit url workers = do
   liftIO $ fetchCommit (url,commit)
   liftP $ plog "\n\n -----  WORKING ON NEXT COMMIT ------\n\n"
@@ -96,18 +93,18 @@ runAlg p commit url workers = do
   insertEndTime commit
   return ()
 
--- Different algorithms for distributing the work --------------------------- 
+-- Different algorithms for distributing the work -------------------------------- 
 workSteal :: [NodeId] -> AppProcess ()
 workSteal workers = do
   files <- asks files'
   me <- liftP getSelfPid
-  workQueue <- lift $ lift $ spawnLocal $ do 
+  workQueue <- liftP $ spawnLocal $ do 
     forM_ files (\ f -> do pid <- expect; send pid f) 
     forever $ do
       pid <- expect
       send pid ()
-  lift $ lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-
+  liftP $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
+-----------------------------------------------------------------------------------
 masterSlave :: [NodeId] -> AppProcess ()
 masterSlave workers = do
   me <- liftP getSelfPid
@@ -116,7 +113,13 @@ masterSlave workers = do
   pids <- liftP $ forM nids (\ _ -> expect) 
   lift $ put pids
   forM_ files (\ f -> do pid <- getPid; liftP $ send pid f)
------------------------------------------------------------------------------
+
+getPid :: AppProcess ProcessId
+getPid = do
+  (p:pids) <- lift get
+  lift $ put (pids ++ [p])
+  return p
+----------------------------------------------------------------------------------
 
 getResults :: String -> Int -> Int -> AppProcess ()
 getResults commit curCount total = do

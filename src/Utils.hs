@@ -11,7 +11,6 @@
 {-# LANGUAGE TypeFamilies               #-}
 
 module Utils(
-getDir,
 plog,log,
 getDir,getRecursiveContents,
 Command,

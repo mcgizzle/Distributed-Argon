@@ -48,8 +48,6 @@ type Master = ProcessId
 doWork :: String -> IO String 
 doWork = runArgon
 
-
-
 slave :: Master -> Process ()
 slave manager = run manager manager
 
@@ -78,19 +76,9 @@ remotable['worker,'slave]
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
-
---liftP :: AppProcess ()
+liftP :: (Monad m, Monad (t1 m), MonadTrans t, MonadTrans t1) => m a -> t (t1 m) a
 liftP p = lift $ lift p
 
-masterSlave :: [NodeId] -> AppProcess ()
-masterSlave workers = do
-  me <- liftP getSelfPid
-  files <- asks files'
-  nids <- liftP $ forM workers $ \ nid -> spawn nid $ $(mkClosure 'slave) me
-  pids <- lift $ lift $ forM nids (\ _ -> expect) 
-  lift $ put pids
-  forM_ files (\ f -> do pid <- getPid; lift $ lift $ send pid f)
-  
 getPid :: AppProcess ProcessId
 getPid = do
   (p:pids) <- lift get
@@ -107,7 +95,8 @@ runAlg p commit url workers = do
   p workers 
   insertEndTime commit
   return ()
- 
+
+-- Different algorithms for distributing the work --------------------------- 
 workSteal :: [NodeId] -> AppProcess ()
 workSteal workers = do
   files <- asks files'
@@ -118,12 +107,22 @@ workSteal workers = do
       pid <- expect
       send pid ()
   lift $ lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  
+
+masterSlave :: [NodeId] -> AppProcess ()
+masterSlave workers = do
+  me <- liftP getSelfPid
+  files <- asks files'
+  nids <- liftP $ forM workers $ \ nid -> spawn nid $ $(mkClosure 'slave) me
+  pids <- liftP $ forM nids (\ _ -> expect) 
+  lift $ put pids
+  forM_ files (\ f -> do pid <- getPid; liftP $ send pid f)
+-----------------------------------------------------------------------------
+
 getResults :: String -> Int -> Int -> AppProcess ()
 getResults commit curCount total = do
   unless (curCount == total) $ do 
-    (f,res) <- lift $ lift expect
-    lift $ lift $ plog $ " Received: "++ f
+    (f,res) <- liftP expect
+    liftP $ plog $ " Received: "++ f
     insertResult commit f res
     getResults commit (curCount + 1) total
      

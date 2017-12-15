@@ -27,6 +27,12 @@ The __manager__ stores the results it receives from the __workers__ in a databas
 ## Discussion
 As I would have expected, the work-stealing pattern was a faster approach on average. This can be seen from the sample results provided below. Rather than the manager sending files, and the workers waiting, it is faster for the manager to send work to whoever is ready and waiting. In the master/slave there is the potential for lost working time while a manager is waiting for a worker to finish some previous task. This do not occur with the work-stealing pattern however, as the manager simply sends the work to whoever requests it first.
 
+## Results
+![alt text](http://McGizzle.com/Distributed-Argon/image2.jpeg)
+
+![alt text](http://McGizzle.com/Distributed-Argon/image1.jpeg)
+
+
 ## The database
 A PostgreSQL database is used to store the revelant information relating to a repositories complexity and the time taken with various amounts of nodes. There a  database maintains two 
 

@@ -11,10 +11,12 @@ The program accepts a GitHub repository and then calculates the complexity for e
 I decided to implement two algorithms and graph their results against eachother.
 
 1. Work-Stealing
-A __manager__ node distributes the work to each __worker__ node. The work is distributed on a per-file basis. Each filepath is added to a queue by the __manager__ and distributed to the __workers__. The __workers__ evaluate the complexity, return the result and request more work. This implementation is often referred to as the self-scheduling or work-stealing pattern.
+
+A __worker__ nodes __steal__ work from the manager when they are available to work. the __manager__ adds the files to a queue. This queue is shared among all the workers and they take work from it. The __workers__ evaluate the complexity, return the result and request more work from the manager. This implementation is often referred to as the self-scheduling or work-stealing pattern.
 
 2. Master/Slave
-A __manager__ node decides on the distribution of the work. the __mamanger__ splits up the work evenly (per-file basis) and distributes an even amount to each worker.
+
+A __manager__ node decides on the distribution of the work. the __manager__ splits up the work evenly (per-file basis) and distributes an even amount to each worker.
 
 
 

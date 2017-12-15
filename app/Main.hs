@@ -10,28 +10,36 @@ import System.Environment                                 (getArgs)
 import System.Exit
 import System.FilePath
 
+import Database.Persist.Sql
+import Control.Monad.Reader
+import Control.Monad.State
 import Prelude hiding (log)
 import Data.List.Split
 
 import Lib 
 import Utils
 import Database
+import Config
 
-startManager :: String -> String -> String -> IO ()
-startManager url host port = do
-  pool <- initDB
-  let dir = getDir url
-  commits <- getCommits url dir
+ 
+--startManager :: String -> String -> String -> String -> IO ()
+startManager url host port p = do
+  pool <- makePool  
+  commits <- getCommits url 
   backend <- initializeBackend host port rtable
+  runSqlPool doMigrations pool
+  files <- getRecursiveContents $ getDir url
   startMaster backend $ \workers -> do
-    id <- runDB pool $ insertTotalStartTime url (length workers) 
+    id <- liftIO $ runSqlPool (insertTotalStartTime url (length workers)) pool
     mapM_ (\ commit -> do
-              let runData = Run url dir (length workers) commit id
-              manager runData workers pool) commits
-    runDB pool $ insertTotalEndTime url (length workers)
+      config <- liftIO $ initConfig id files 
+      runStateT (runReaderT (runAlg masterSlave commit url workers) config) []
+      runStateT (runReaderT (getResults commit 0 (length files)) config) []
+      ) commits
     terminateAllSlaves backend
-    liftIO $ putStrLn "\nResults have been stored in the database."
-  
+    liftIO $ runSqlPool (insertTotalEndTime url (length workers)) pool
+  clearRepo url
+  liftIO $ putStrLn "\nResults have been stored in the database."
   return ()
 
 main :: IO ()
@@ -42,7 +50,9 @@ main = do
       putStrLn "Starting Node as Worker"
       backend <- initializeBackend host port rtable
       startSlave backend    
-    ["manager", url, host, port]  -> do 
+    ["manager", url, host, port, p]  -> do 
       putStrLn "Satrting Manager Node"
-      startManager url host port
+      case p of
+        "master-slave"    -> startManager url host port masterSlave
+        "work-stealing"   -> startManager url host port workSteal 
     _ -> putStrLn "Bad parameters"

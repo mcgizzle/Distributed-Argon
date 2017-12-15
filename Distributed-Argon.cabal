@@ -15,10 +15,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib, Utils, Database
+  exposed-modules:     Lib, Utils, Database, Models, Config
   build-depends:       base >= 4.7 && < 5
                      , distributed-process 
                      , distributed-process-simplelocalnet 
+                     , lifted-base
                      , network-transport-tcp
                      , filepath, mtl
                      , process
@@ -38,6 +39,7 @@ library
                      , aeson
                      , aeson-compat
                      , stm
+                     , split
                      , bytestring
                      , attoparsec
                      , split
@@ -59,6 +61,7 @@ executable Distributed-Argon
                      , pipes
                      , pipes-safe
                      , split
+                     , persistent
                      , binary
   default-language:    Haskell2010
 

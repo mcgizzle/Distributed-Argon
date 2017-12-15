@@ -32,7 +32,7 @@ __Repository__
 
 | Id | Url | Nodes | Start Time| End time| Pattern |
 | --- | --- | --- | --- | --- | --- |
-| 1 | https://github.com/McGizzle/Distributed-Argon/ | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 | work-stealing|
+| 1 | https://github.com... | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 | work-stealing|
 
 __Commit Info__ 
 

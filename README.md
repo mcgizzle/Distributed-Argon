@@ -3,16 +3,18 @@
 A distributed implementation of [argon](https://github.com/rubik/argon) built using Cloud Haskell with a PostgreSQL database.
 
 ## About
+
 Distributed-Argon uses cloud haskell, implementing the _work-stealing_ and the _master/slave_ algorithm, for distributing the workload of argon, a library which measures code complexity. 
 
 The program accepts a GitHub repository and then calculates the complexity for every file of every commit in the project, storing the results in a database. I created another repository [Charting-Complexity]() to generate the graphs.
 
 ## Implementation
+
 I decided to implement two algorithms and graph their results against eachother.
 
 1. Work-Stealing
 
-A __worker__ nodes __steal__ work from the manager. the __manager__ sends each file to on a first-come-first-serve basis. The __workers__ evaluate the complexity, return the result and request more work from the manager. This implementation is often referred to as the self-scheduling or work-stealing pattern.
+A __worker__ nodes __steal__ work from the manager. the __manager__ sends each file on a first-come-first-serve basis. The __workers__ evaluate the complexity, return the result and request more work from the manager. This implementation is often referred to as the self-scheduling or work-stealing pattern.
 
 [Link to implementation in the source](https://github.com/McGizzle/Distributed-Argon/blob/aa160c1d58f0ce72e3940e10a3876750533cc077/src/Lib.hs#L100)
 
@@ -25,7 +27,7 @@ A __manager__ node decides on the distribution of the work. the __manager__ spli
 The __manager__ stores the results it receives from the __workers__ in a database as they come in non-deterministically. 
 
 ## Discussion
-As I would have expected, the work-stealing pattern was a faster approach on average. This can be seen from the sample results provided below. Rather than the manager sending files, and the workers waiting, it is faster for the manager to send work to whoever is ready and waiting. In the master/slave there is the potential for lost working time while a manager is waiting for a worker to finish some previous task. This do not occur with the work-stealing pattern however, as the manager simply sends the work to whoever requests it first.
+As I would have expected, the work-stealing pattern was a faster approach on average. This can be seen from the sample results provided below. Rather than the manager sending files, and the workers waiting, it is faster for the manager to send work to whoever is ready. In the master/slave there is the potential for lost working time while a manager is waiting for a worker to finish some previous task. This does not occur with the work-stealing pattern however, as the manager simply sends the work to whoever is ready.
 
 
 ## Results
@@ -49,9 +51,9 @@ A PostgreSQL database is used to store the revelant information relating to a re
 
 __Repository__ 
 
-| Id | Url | Nodes | Start Time| End time| Pattern |
-| --- | --- | --- | --- | --- | --- |
-| 1 | https://github.com... | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 | work-stealing|
+| Id | Url | Nodes | Start Time| End time|
+| --- | --- | --- | --- | --- |
+| 1 | https://github.com... | 2 | 2017-11-26 15:02:36.830273+00 | 2017-11-26 15:03:25.63044+00 |
 
 __Commit Info__ 
 
@@ -67,14 +69,18 @@ __Commit Results__
 
 
 ## Prerequisites
+
 * [PostgreSQL](https://www.postgresql.org/) to store the data.
 * [Stack](https://docs.haskellstack.org/en/stable/README/) to build and run the project.
 
 ## To build with stack
+
 ``` stack build ```
 
 ## To run
+
 Fire up two shells and execute the following scripts.
+
 #### Start the worker nodes
 ```bash workers.sh```
 #### Start the mananger node
@@ -85,9 +91,11 @@ The patterns can be
 The number of workers can be edited by altering the worker.sh script.
 
 ## Viewing the results
+
 I have built a graphical display of the results using Chart.js. A link to that repo can be found [here](https://github.com/McGizzle/Charting-Complexity)
 
 Alternatively, as all the necessary information is stored in a database, it can therefore be manipulated in any way you see fit.
 
 ### Thanks
+
 To all the [argon](https://github.com/rubik/argon) contributors for allowing me to display my distributed programming skills with their great library!

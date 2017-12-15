@@ -88,7 +88,8 @@ Fire up two shells and execute the following scripts.
 The patterns can be 
 `work-stealing` or `master-slave`
 #### Note
-The number of workers can be edited by altering the worker.sh script.
+The number of workers, host address and port numbers, can be edited by altering the worker.sh and manager.sh scripts.
+
 
 ## Viewing the results
 

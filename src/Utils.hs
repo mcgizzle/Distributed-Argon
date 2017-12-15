@@ -15,7 +15,8 @@ plog,log,
 getDir,getRecursiveContents,
 Command,
 runArgon,
-Repo,getCommits,fetchCommit
+Repo,getCommits,fetchCommit,
+clearRepo
 ) where
 
 import System.IO
@@ -56,7 +57,8 @@ type Command = (String,String)
 
 sendCommand :: Command -> IO String
 sendCommand (cmd,arg) = do
-  (_,Just hout,_,ph) <- createProcess (proc cmd $ words arg){ std_out = CreatePipe }
+  (_,Just hout,_,ph) <- createProcess (proc cmd $ words arg){ std_out = CreatePipe, std_err = Inherit }
+  waitForProcess ph
   hGetContents hout
 
 getDir :: String -> String
@@ -81,11 +83,15 @@ getCommits url = do
   commits <- sendCommand ("git","--git-dir "++ (getDir url) ++"/.git log --pretty=format:'%H'")
   return $ map strip $ words commits
 
-fetchCommit :: (String,String) -> IO ()
+fetchCommit :: AppProcess ()
 fetchCommit (url,commit) = do
   cloneRepo url
   readCreateProcess ((proc "git" ["reset","--hard",commit]){ cwd = Just (getDir url)}) ""
   return ()
+
+clearRepo :: String -> IO ()
+clearRepo url = void $ callProcess dir ["rm","-rf",getDir url]
+
 
 strip :: [a] -> [a]
 strip []  = []

@@ -19,6 +19,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , distributed-process 
                      , distributed-process-simplelocalnet 
+                     , lifted-base
                      , network-transport-tcp
                      , filepath, mtl
                      , process

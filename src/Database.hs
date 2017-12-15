@@ -39,6 +39,7 @@ import Control.Monad.Reader (MonadIO, MonadReader, asks, liftIO)
 
 -- MISC
 import Data.Maybe (fromJust)
+import Prelude hiding (id)
 
 import Utils
 import Config
@@ -52,28 +53,32 @@ runDB query = do
   pool <- asks poolConfig
   liftIO $ runSqlPool query pool
 
-insertStartTime :: Key Repository -> String ->  AppProcess ()
-insertStartTime id commit = do
+insertStartTime :: String ->  AppProcess ()
+insertStartTime commit = do
+  id' <- asks id
   time <- liftIO getCurrentTime
-  runDB $ insert $ CommitInfo id commit time Nothing  
+  runDB $ insert $ CommitInfo id' commit time Nothing  
   return ()
 
-insertEndTime :: Key Repository -> String -> AppProcess ()
-insertEndTime id commit = do
+insertEndTime :: String -> AppProcess ()
+insertEndTime commit = do
+  id' <- asks id
   time <- liftIO getCurrentTime
-  runDB $ updateWhere [ CommitInfoRepositoryId ==. id
+  runDB $ updateWhere [ CommitInfoRepositoryId ==. id'
                       , CommitInfoCommit_str ==. commit ] 
                       [ CommitInfoEnd_time =. Just time ]
   return ()
 
-insertFile :: Key Repository -> String -> String -> AppProcess ()
-insertFile id commit file = do
-  runDB $ insert $ CommitResults id commit file Nothing 
+insertFile :: String -> String -> AppProcess ()
+insertFile commit file = do
+  id' <- asks id
+  runDB $ insert $ CommitResults id' commit file Nothing 
   return ()
 
-insertResult :: Key Repository -> String -> String -> String -> AppProcess ()
-insertResult id commit file res = do
-  runDB $ updateWhere [ CommitResultsRepositoryId ==. id
+insertResult :: String -> String -> String -> AppProcess ()
+insertResult commit file res = do
+  id' <- asks id
+  runDB $ updateWhere [ CommitResultsRepositoryId ==. id'
               , CommitResultsFile_name ==. file ] 
               [CommitResultsComplexity =. Just res]
   return ()

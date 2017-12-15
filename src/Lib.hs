@@ -11,15 +11,18 @@ import Control.Distributed.Process.Closure
 import Control.Distributed.Process.Node                     (initRemoteTable)
 import Control.Monad
 import Network.Transport.TCP                                (createTransport,defaultTCPParameters)
-import Prelude hiding (log)
+import Prelude hiding (log,id)
 
 -- STM
 import Control.Concurrent 
 import Control.Concurrent.STM
 import Control.Concurrent.STM.TVar
 
--- Data
-import Data.Binary
+-- MONADS
+import Control.Monad.State
+import Control.Concurrent.Lifted
+
+-- DATA
 import Data.Either
 
 -- Library
@@ -45,55 +48,82 @@ type Master = ProcessId
 doWork :: String -> IO String 
 doWork = runArgon
 
+
+
+slave :: Master -> Process ()
+slave manager = run manager manager
+
 worker :: (Master, WorkQueue) -> Process ()
-worker (manager, workQueue) = do
+worker (manager, workQueue) = run workQueue manager
+
+run :: ProcessId -> ProcessId -> Process ()
+run p1 manager = do
   me <- getSelfPid
   plog " Ready to work! " 
-  run me
+  send p1 me
+  receiveWait[match work, match end]
   where
-    run :: ProcessId -> Process ()
-    run me = do
-      send workQueue me
-      receiveWait[match work, match end]
-      where
-        work f = do
-          plog $ " Working on: " ++ show f
-          result <- liftIO $ doWork f
-          send manager (f,result)
-          plog $ " Finished work on: " ++ show f ++ " :) "
-          run me 
-        end () = do
-          plog " Terminating worker "
-          return ()
+    work f = do
+      plog $ " Working on: " ++ show f
+      result <- liftIO $ doWork f
+      send manager (f,result)
+      plog $ " Finished work on: " ++ show f ++ " :) "
+      run p1 manager 
+    end () = do
+      plog " Terminating worker "
+      return ()
 
-remotable['worker] 
+remotable['worker,'slave] 
 
 rtable :: RemoteTable
 rtable = Lib.__remoteTable initRemoteTable
 
---manager :: Key Repository -> String -> String -> [NodeId] -> AppProcess ()
-manager id commit url workers = do
-  me <- lift getSelfPid
+
+--liftP :: AppProcess ()
+liftP p = lift $ lift p
+
+masterSlave :: [NodeId] -> AppProcess ()
+masterSlave workers = do
+  me <- liftP getSelfPid
+  files <- asks files'
+  nids <- liftP $ forM workers $ \ nid -> spawn nid $ $(mkClosure 'slave) me
+  pids <- lift $ lift $ forM nids (\ _ -> expect) 
+  lift $ put pids
+  forM_ files (\ f -> do pid <- getPid; lift $ lift $ send pid f)
+  
+getPid :: AppProcess ProcessId
+getPid = do
+  (p:pids) <- lift get
+  lift $ put (pids ++ [p])
+  return p
+
+runAlg p commit url workers = do
   liftIO $ fetchCommit (url,commit)
-  lift $ plog "\n\n -----  WORKING ON NEXT COMMIT ------\n\n"
-  files <- liftIO $ getRecursiveContents (getDir url)
-  Control.Monad.Reader.mapM_ (insertFile id commit) files
-  insertStartTime id commit
-  workQueue <- lift $ spawnLocal $ do 
+  liftP $ plog "\n\n -----  WORKING ON NEXT COMMIT ------\n\n"
+  files <- asks files'
+  cfg <- ask
+  Control.Monad.Reader.mapM_ (insertFile commit) files
+  insertStartTime commit
+  p workers 
+  insertEndTime commit
+  return ()
+ 
+workSteal :: [NodeId] -> AppProcess ()
+workSteal workers = do
+  files <- asks files'
+  me <- liftP getSelfPid
+  workQueue <- lift $ lift $ spawnLocal $ do 
     forM_ files (\ f -> do pid <- expect; send pid f) 
     forever $ do
       pid <- expect
       send pid ()
-  lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
-  getResults 0 (length files)
-  insertEndTime id commit
-  return ()
-  where 
-    getResults :: Int -> Int -> AppProcess ()
-    getResults curCount total = do
-      unless (curCount == total) $ do 
-        (f,res) <- lift expect
-        lift $ plog $ " Received: "++ f
-        insertResult id commit f res
-        getResults (curCount + 1) total
+  lift $ lift $ forM_ workers $ \ nid -> spawn nid $ $(mkClosure 'worker) (me,workQueue)
+  
+getResults :: String -> Int -> Int -> AppProcess ()
+getResults commit curCount total = do
+  unless (curCount == total) $ do 
+    (f,res) <- lift $ lift expect
+    lift $ lift $ plog $ " Received: "++ f
+    insertResult commit f res
+    getResults commit (curCount + 1) total
      

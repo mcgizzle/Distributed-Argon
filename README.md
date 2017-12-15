@@ -14,11 +14,13 @@ I decided to implement two algorithms and graph their results against eachother.
 
 A __worker__ nodes __steal__ work from the manager when they are available to work. the __manager__ adds the files to a queue. This queue is shared among all the workers and they take work from it. The __workers__ evaluate the complexity, return the result and request more work from the manager. This implementation is often referred to as the self-scheduling or work-stealing pattern.
 
+[Link to implementation in the source](https://github.com/McGizzle/Distributed-Argon/blob/aa160c1d58f0ce72e3940e10a3876750533cc077/src/Lib.hs#L100)
+
 2. Master/Slave
 
 A __manager__ node decides on the distribution of the work. the __manager__ splits up the work evenly (per-file basis) and distributes an even amount to each worker.
 
-
+[Link to implementation in the source](https://github.com/McGizzle/Distributed-Argon/blob/aa160c1d58f0ce72e3940e10a3876750533cc077/src/Lib.hs#L111)
 
 The __manager__ stores the results it receives from the __workers__ in a database as they come in non-deterministically. 
 
